@@ -14,6 +14,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class DailyAccountPerformanceResource extends Resource
@@ -41,7 +42,23 @@ class DailyAccountPerformanceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return DailyAccountPerformancesTable::configure($table);
+        return DailyAccountPerformancesTable::configure($table)
+            ->deferLoading()
+            ->searchable()
+            ->paginated([10, 25, 50])
+            ->groups([
+                Group::make('branch.district.name')
+                    ->label('District Office')
+                    ->collapsible(),
+
+                Group::make('branch.name')
+                    ->label('Branch')
+                    ->collapsible(),
+            ])
+            ->defaultGroup(
+                Group::make('branch.district.name')
+                    ->label('District Office')
+            );
     }
 
     public static function getRelations(): array

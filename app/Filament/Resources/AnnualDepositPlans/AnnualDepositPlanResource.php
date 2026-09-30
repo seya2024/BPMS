@@ -14,6 +14,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class AnnualDepositPlanResource extends Resource
@@ -39,7 +40,27 @@ class AnnualDepositPlanResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return AnnualDepositPlansTable::configure($table);
+        return AnnualDepositPlansTable::configure($table)
+            ->deferLoading()
+            ->searchable()
+            ->paginated([10, 25, 50])
+            ->groups([
+                Group::make('annualPlan.financialYear.name')
+                    ->label('Financial Year')
+                    ->collapsible(),
+
+                Group::make('annualPlan.district.name')
+                    ->label('District Office')
+                    ->collapsible(),
+
+                Group::make('annualPlan.creator.name')
+                    ->label('Created By')
+                    ->collapsible(),
+            ])
+            ->defaultGroup(
+                Group::make('annualPlan.financialYear.name')
+                    ->label('Financial Year')
+            );
     }
 
     public static function getRelations(): array

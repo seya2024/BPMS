@@ -31,4 +31,10 @@ class DailyDepositPerformance extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
+    public function details()
+    {
+        return $this->hasMany(DailyDepositPerformanceDetail::class, 'branch_id', 'branch_id')
+            ->whereColumn('business_day', 'business_day');
+    }
 }

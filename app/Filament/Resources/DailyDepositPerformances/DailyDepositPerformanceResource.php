@@ -14,6 +14,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class DailyDepositPerformanceResource extends Resource
@@ -39,7 +40,23 @@ class DailyDepositPerformanceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return DailyDepositPerformancesTable::configure($table);
+        return DailyDepositPerformancesTable::configure($table)
+            ->deferLoading()
+            ->searchable()
+            ->paginated([10, 25, 50])
+            ->groups([
+                Group::make('branch.district.name')
+                    ->label('District Office')
+                    ->collapsible(),
+
+                Group::make('branch.name')
+                    ->label('Branch')
+                    ->collapsible(),
+            ])
+            ->defaultGroup(
+                Group::make('branch.district.name')
+                    ->label('District Office')
+            );
     }
 
     public static function getRelations(): array
@@ -53,9 +70,9 @@ class DailyDepositPerformanceResource extends Resource
     {
         return [
             'index' => ListDailyDepositPerformances::route('/'),
-            'create' => CreateDailyDepositPerformance::route('/create'),
+            // 'create' => CreateDailyDepositPerformance::route('/create'),
             'view' => ViewDailyDepositPerformance::route('/{record}'),
-            'edit' => EditDailyDepositPerformance::route('/{record}/edit'),
+            // 'edit' => EditDailyDepositPerformance::route('/{record}/edit'),
         ];
     }
 }

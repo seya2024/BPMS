@@ -14,6 +14,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class FinancialYearResource extends Resource
@@ -38,7 +39,23 @@ class FinancialYearResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return FinancialYearsTable::configure($table);
+        return FinancialYearsTable::configure($table)
+            ->deferLoading()
+            ->searchable()
+            ->paginated([10, 25, 50])
+            ->groups([
+                Group::make('status')
+                    ->label('Status')
+                    ->collapsible(),
+
+                Group::make('closedBy.name')
+                    ->label('Closed By')
+                    ->collapsible(),
+            ])
+            ->defaultGroup(
+                Group::make('status')
+                    ->label('Status')
+            );
     }
 
     public static function getRelations(): array

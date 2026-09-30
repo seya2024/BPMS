@@ -14,16 +14,17 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedChevronRight;
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
     protected static ?string $navigationLabel = 'List of Users';
-    protected static ?string $recordTitleAttribute = 'User';
-    protected static string|\UnitEnum|null $navigationGroup = 'User Managment';
+    protected static string|\UnitEnum|null $navigationGroup = 'User Management';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -37,7 +38,31 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return UsersTable::configure($table);
+        return UsersTable::configure($table)
+            ->deferLoading()
+            ->searchable()
+            ->paginated([10, 25, 50])
+            ->groups([
+                Group::make('district.name')
+                    ->label('District Office')
+                    ->collapsible(),
+
+                Group::make('group.name')
+                    ->label('Primary Group')
+                    ->collapsible(),
+
+                Group::make('primaryBranch.name')
+                    ->label('Branch')
+                    ->collapsible(),
+
+                Group::make('status')
+                    ->label('Status')
+                    ->collapsible(),
+            ])
+            ->defaultGroup(
+                Group::make('district.name')
+                    ->label('District Office')
+            );
     }
 
     public static function getRelations(): array
@@ -51,9 +76,9 @@ class UserResource extends Resource
     {
         return [
             'index' => ListUsers::route('/'),
-            'create' => CreateUser::route('/create'),
+            // 'create' => CreateUser::route('/create'),
             'view' => ViewUser::route('/{record}'),
-            'edit' => EditUser::route('/{record}/edit'),
+            // 'edit' => EditUser::route('/{record}/edit'),
         ];
     }
 }

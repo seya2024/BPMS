@@ -1,0 +1,155 @@
+@import '../../css/app.css';
+
+/* Excel-like table styling for Daily Deposit Performance table */
+.fi-table-excel {
+    border-collapse: collapse;
+    border: 2px solid #374151;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.fi-table-excel th,
+.fi-table-excel td {
+    border: 1px solid #d1d5db;
+    padding: 4px 8px;
+    text-align: right;
+}
+
+.fi-table-excel th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #374151;
+    padding: 6px 8px;
+    text-align: center;
+}
+
+.fi-table-excel td {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.fi-table-excel tr:nth-child(even) td {
+    background-color: #f9fafb;
+}
+
+.fi-table-excel tr:hover td {
+    background-color: #fef3c7;
+}
+
+.fi-table-excel .fi-ta-cell {
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+}
+
+.fi-table-excel .fi-ta-header-cell {
+    background-color: #f3f4f6;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #374151;
+    border-right: 1px solid #d1d5db;
+    border-left: 1px solid #d1d5db;
+    padding: 6px 8px;
+}
+
+.fi-table-excel .fi-ta-cell:first-child,
+.fi-table-excel .fi-ta-header-cell:first-child {
+    border-left: 2px solid #374151;
+}
+
+.fi-table-excel .fi-ta-cell:last-child,
+.fi-table-excel .fi-ta-header-cell:last-child {
+    border-right: 2px solid #374151;
+}
+
+/* Column-specific styling */
+.fi-table-excel .branch-col {
+    font-weight: 600;
+    background-color: #f3f4f6;
+    border-right: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+.fi-table-excel .type-col {
+    text-align: center;
+}
+
+.fi-table-excel .amount-col {
+    text-align: right;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.fi-table-excel .total-col {
+    font-weight: 600;
+    background-color: #fef3c7;
+    border-left: 1px solid #e5e7eb;
+}
+
+.fi-table-excel .total-col.success {
+    background-color: #d1fae5;
+}
+
+.fi-table-excel .total-col.warning {
+    background-color: #fef3c7;
+}
+
+.fi-table-excel .total-col.primary {
+    background-color: #dbeafe;
+}
+
+.fi-table-excel .positive {
+    color: #059669;
+}
+
+.fi-table-excel .negative {
+    color: #dc2626;
+}
+
+/* Badge styling */
+.fi-table-excel .fi-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Hover effects */
+.fi-table-excel tbody tr:hover {
+    background-color: #fef3c7;
+}
+
+/* Focus/active states */
+.fi-table-excel tbody tr:focus-within {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+}
+
+/* Scrollbar styling */
+.fi-table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.fi-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.fi-table-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.fi-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .fi-table-excel {
+        font-size: 11px;
+    }
+    
+    .fi-table-excel th,
+    .fi-table-excel td {
+        padding: 3px 6px;
+    }
+}

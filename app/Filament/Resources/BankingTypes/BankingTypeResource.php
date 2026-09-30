@@ -53,9 +53,9 @@ class BankingTypeResource extends Resource
     {
         return [
             'index' => ListBankingTypes::route('/'),
-            'create' => CreateBankingType::route('/create'),
+            // 'create' => CreateBankingType::route('/create'),
             'view' => ViewBankingType::route('/{record}'),
-            'edit' => EditBankingType::route('/{record}/edit'),
+            // 'edit' => EditBankingType::route('/{record}/edit'),
         ];
     }
 }
