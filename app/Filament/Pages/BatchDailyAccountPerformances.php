@@ -2,19 +2,19 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\BusinessDay;
+use App\Filament\Support\Notify;
 use App\Models\Branch;
 use App\Models\DailyAccountPerformance;
 use App\Models\District;
+use App\Support\DailyRecord;
 use Filament\Actions\Action;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use UnitEnum;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
@@ -27,7 +27,21 @@ use Filament\Support\Enums\Alignment;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
+/**
+ * Batch account performance entry for one district and one business day.
+ *
+ * The business day is always in the past: the picker defaults to yesterday and
+ * validates `before_or_equal:yesterday`, matching the other batch pages.
+ *
+ * This table tracks balances and flows and has NO banking-type dimension, so the
+ * asymmetric Conventional/IFB rule that applies to account openings and deposits
+ * deliberately does not apply here.
+ *
+ * Writes go through DailyRecord::upsert() rather than updateOrCreate(); see that
+ * class for why the date comparison must be driver-safe.
+ */
 class BatchDailyAccountPerformances extends Page
 {
     protected static ?string $title = 'Batch Daily Account Performance Entry';
@@ -86,23 +100,11 @@ class BatchDailyAccountPerformances extends Page
                                     ->placeholder('Select district...')
                                     ->columnSpan(3),
 
-                                DatePicker::make('business_day')
-                                    ->label('Business Day')
+                                BusinessDay::picker()
                                     ->live()
-                                    ->native(false)
                                     ->afterStateUpdated(function (Set $set, mixed $state, Get $get): void {
                                         $set('entries', $this->buildEntries($get('district_id'), $state));
                                     })
-                                    ->required()
-                                    ->rules([
-                                        'required',
-                                        'date',
-                                        'before_or_equal:yesterday',
-                                    ])
-                                    ->validationMessages([
-                                        'before_or_equal' => 'Business day must be yesterday or earlier.',
-                                    ])
-                                    ->placeholder('Select date...')
                                     ->columnSpan(1),
                             ]),
                     ]),
@@ -179,7 +181,7 @@ class BatchDailyAccountPerformances extends Page
                                     ])
                                     ->placeholder('0')
                                     ->step(1)
-                                    ->extraAttributes(['style' => 'width: 150px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
+                                    ->extraAttributes(['style' => 'width: 90px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
                                     ->inputMode('numeric'),
 
                                 TextInput::make('active_accounts')
@@ -204,7 +206,7 @@ class BatchDailyAccountPerformances extends Page
                                     ])
                                     ->placeholder('0')
                                     ->step(1)
-                                    ->extraAttributes(['style' => 'width: 150px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
+                                    ->extraAttributes(['style' => 'width: 90px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
                                     ->inputMode('numeric'),
 
                                 TextInput::make('new_accounts')
@@ -229,7 +231,7 @@ class BatchDailyAccountPerformances extends Page
                                     ])
                                     ->placeholder('0')
                                     ->step(1)
-                                    ->extraAttributes(['style' => 'width: 150px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
+                                    ->extraAttributes(['style' => 'width: 90px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
                                     ->inputMode('numeric'),
 
                                 TextInput::make('dormant_accounts')
@@ -254,7 +256,7 @@ class BatchDailyAccountPerformances extends Page
                                     ])
                                     ->placeholder('0')
                                     ->step(1)
-                                    ->extraAttributes(['style' => 'width: 150px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
+                                    ->extraAttributes(['style' => 'width: 90px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
                                     ->inputMode('numeric'),
 
                                 TextInput::make('reactivated_accounts')
@@ -279,7 +281,7 @@ class BatchDailyAccountPerformances extends Page
                                     ])
                                     ->placeholder('0')
                                     ->step(1)
-                                    ->extraAttributes(['style' => 'width: 150px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
+                                    ->extraAttributes(['style' => 'width: 90px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
                                     ->inputMode('numeric'),
 
                                 TextInput::make('remarks')
@@ -345,11 +347,9 @@ class BatchDailyAccountPerformances extends Page
         }
 
         $branches = Branch::query()
-            ->with('bankingType:id,name')
             ->where('district_id', $districtId)
-            ->orderBy('bankingType_id')
             ->orderBy('name')
-            ->get(['id', 'name', 'bankingType_id']);
+            ->get(['id', 'name']);
 
         if ($branches->isEmpty()) {
             return [];
@@ -397,47 +397,55 @@ class BatchDailyAccountPerformances extends Page
         $entries = $data['entries'] ?? [];
 
         if (blank($entries)) {
-            Notification::make()
-                ->warning()
-                ->title('Nothing to save')
-                ->body('Select a district office that has branches, then enter the performance.')
-                ->send();
+            Notify::nothingToSave('account performance');
 
             return;
         }
 
         $saved = 0;
 
-        DB::transaction(function () use ($entries, $businessDay, &$saved): void {
-            foreach ($entries as $entry) {
-                if (blank($entry['branch_id'] ?? null)) {
-                    continue;
+
+        $updated = 0;
+
+        try {
+            DB::transaction(function () use ($entries, $businessDay, &$saved, &$updated): void {
+                foreach ($entries as $entry) {
+                    if (blank($entry['branch_id'] ?? null)) {
+                        continue;
+                    }
+
+                    $branchId = $entry['branch_id'];
+
+                    $row = DailyRecord::upsert(
+                        DailyAccountPerformance::class,
+                        $branchId,
+                        $businessDay,
+                        [
+                            'total_accounts' => (int) ($entry['total_accounts'] ?? 0),
+                            'active_accounts' => (int) ($entry['active_accounts'] ?? 0),
+                            'new_accounts' => (int) ($entry['new_accounts'] ?? 0),
+                            'dormant_accounts' => (int) ($entry['dormant_accounts'] ?? 0),
+                            'reactivated_accounts' => (int) ($entry['reactivated_accounts'] ?? 0),
+                            'remarks' => filled($entry['remarks'] ?? null) ? $entry['remarks'] : null,
+                        ]
+                    );
+
+                    // wasRecentlyCreated comes free from the upsert; a separate
+                    // exists() check would be one extra query per branch.
+                    if (! $row->wasRecentlyCreated) {
+                        $updated++;
+                    }
+
+                    $saved++;
                 }
+            });
+        } catch (Throwable $e) {
+            Notify::saveFailed('account performance', $e);
 
-                DailyAccountPerformance::query()->updateOrCreate(
-                    [
-                        'branch_id' => $entry['branch_id'],
-                        'business_day' => $businessDay,
-                    ],
-                    [
-                        'total_accounts' => (int) ($entry['total_accounts'] ?? 0),
-                        'active_accounts' => (int) ($entry['active_accounts'] ?? 0),
-                        'new_accounts' => (int) ($entry['new_accounts'] ?? 0),
-                        'dormant_accounts' => (int) ($entry['dormant_accounts'] ?? 0),
-                        'reactivated_accounts' => (int) ($entry['reactivated_accounts'] ?? 0),
-                        'remarks' => filled($entry['remarks'] ?? null) ? $entry['remarks'] : null,
-                    ],
-                );
+            return;
+        }
 
-                $saved++;
-            }
-        });
-
-        Notification::make()
-            ->success()
-            ->title('Batch entry saved')
-            ->body("{$saved} branch performance" . ($saved === 1 ? '' : 's') . " saved for {$businessDay}.")
-            ->send();
+        Notify::batchSaved('account performance', $saved, $businessDay, updatedCount: $updated);
 
         // Reload the rows so the table reflects the persisted values.
         $this->data['entries'] = $this->buildEntries($this->data['district_id'] ?? null, $businessDay);

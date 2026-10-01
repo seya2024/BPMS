@@ -1,0 +1,86 @@
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\DashboardAnalyticsTest::test_chart_widget_renders_and_has_data(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\DashboardAnalyticsTest::test_stats_widget_renders(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   FAIL  Tests\Feature\NotifyTest
+  Γ£ô plural helper                                                                                                2.06s  
+  Γ¿» nothing to save is a warning with guidance                                                                   1.57s  
+  Γ¿» successful save reports count date and severity                                                              2.82s  
+  Γ¿» failed save notifies rolls back and logs                                                                     2.38s  
+  Γ¿» re saving an existing day is reported as an update                                                           3.99s  
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILED  Tests\Feature\NotifyTest > nothing to save is a warning with guidance                                        
+  Expected a "Nothing to save" notification.
+Failed asserting that null is not null.
+
+  at tests\Feature\NotifyTest.php:89
+     85Γûò         Livewire::test(BatchDailySuperAppSubscriptions::class)->call('save');
+     86Γûò 
+     87Γûò         $n = $this->findNotification('Nothing to save');
+     88Γûò 
+  Γ₧£  89Γûò         $this->assertNotNull($n, 'Expected a "Nothing to save" notification.');
+     90Γûò         $this->assertSame('warning', $n['status']);
+     91Γûò         $this->assertStringContainsString('district office', $n['body']);
+     92Γûò     }
+     93Γûò
+
+  1   tests\Feature\NotifyTest.php:89
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILED  Tests\Feature\NotifyTest > successful save reports count date and severity                           Error   
+  Cannot access protected property Filament\Notifications\Notification::$title
+
+  at tests\Feature\NotifyTest.php:57
+     53Γûò         $component->mount();
+     54Γûò 
+     55Γûò         return $component->notifications
+     56Γûò             ->map(fn ($n) => [
+  Γ₧£  57Γûò                 'title' => (string) $n->title,
+     58Γûò                 'body' => (string) $n->body,
+     59Γûò                 'status' => (string) $n->status,
+     60Γûò             ])
+     61Γûò             ->values()
+
+  1   tests\Feature\NotifyTest.php:57
+  2   vendor\laravel\framework\src\Illuminate\Collections\Arr.php:841
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILED  Tests\Feature\NotifyTest > failed save notifies rolls back and logs         NoMatchingExpectationException   
+  No matching handler found for Mockery_2_Illuminate_Log_LogManager::error('Batch save failed', ['action' => 'super app subscriptions', 'exception' => 'Illuminate\Database\UniqueConstraintViolationException', 'message' => 'SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: daily_super_app_subscriptions.branch_id, daily_super_app_subscriptions.business_day (Connection: sqlite, Database: :memory:, SQL: insert into "daily_super_app_subscriptions" ("branch_id", "business_day", "subscriptions", "target_subscriptions", "remarks", "updated_at", "created_at") values (29, 2026-09-27 00:00:00, 0, 0, ?, 2026-10-01 13:36:57, 2026-10-01 13:36:57))', 'file' => 'C:\xampp\htdocs\BPMS\vendor\laravel\framework\src\Illuminate\Database\Connection.php:838']). Either the method was unexpected or its arguments matched no expected argument list for this method
+
+  at vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:363
+    359Γûò         if (! $instance) {
+    360Γûò             throw new RuntimeException('A facade root has not been set.');
+    361Γûò         }
+    362Γûò 
+  Γ₧£ 363Γûò         return $instance->$method(...$args);
+    364Γûò     }
+    365Γûò }
+    366Γûò
+
+  1   app\Filament\Support\Notify.php:89
+  2   app\Filament\Pages\BatchDailySuperAppSubscriptions.php:359
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILED  Tests\Feature\NotifyTest > re saving an existing day is reported as an update                        Error   
+  Cannot access protected property Filament\Notifications\Notification::$title
+
+  at tests\Feature\NotifyTest.php:57
+     53Γûò         $component->mount();
+     54Γûò 
+     55Γûò         return $component->notifications
+     56Γûò             ->map(fn ($n) => [
+  Γ₧£  57Γûò                 'title' => (string) $n->title,
+     58Γûò                 'body' => (string) $n->body,
+     59Γûò                 'status' => (string) $n->status,
+     60Γûò             ])
+     61Γûò             ->values()
+
+  1   tests\Feature\NotifyTest.php:57
+  2   vendor\laravel\framework\src\Illuminate\Collections\Arr.php:841
+
+
+  Tests:    4 failed, 1 passed (5 assertions)
+  Duration: 13.02s
+

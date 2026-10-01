@@ -12,6 +12,12 @@ class PerformanceOverviewWidget extends BaseWidget
 {
     protected ?string $heading = 'Performance Overview';
 
+    /** One third of the dashboard row, matching the analytics widgets. */
+    protected int | string | array $columnSpan = 1;
+
+    /** Compact layout so the card fits a quarter-width column. */
+    protected int | array | null $columns = 1;
+
     protected function getStats(): array
     {
         $totalBranches = Branch::count();

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Actions;
 
+use App\Filament\Support\Notify;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 
 class ApprovePlanAction extends Action
@@ -51,12 +51,12 @@ class ApprovePlanAction extends Action
                     }
                 }
 
-                Notification::make()
-                    ->success()
-                    ->title('Plan Approved')
-                    ->body('The plan has been approved successfully.')
-                    ->send();
+                Notify::done(
+                    'Plan approved',
+                    'The plan is now approved and its targets apply to attainment reporting.'
+                );
             })
             ->visible(fn (Model $record) => $record->canBeApproved());
     }
 }
+

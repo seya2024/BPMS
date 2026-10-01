@@ -119,26 +119,13 @@ class SampleDepositPerformanceSeeder extends Seeder
                     ],
                 );
 
-                // Save Conventional segments
-                foreach (['Corporate', 'Retail', 'MSME'] as $segmentName) {
-                    $segment = $segments->get($segmentName);
-                    if ($segment) {
-                        DailyDepositPerformanceDetail::updateOrCreate(
-                            [
-                                'branch_id' => $branch->id,
-                                'business_day' => $businessDay,
-                                'banking_type_id' => 1, // Conventional
-                                'business_segment_id' => $segment->id,
-                            ],
-                            [
-                                'amount' => $branchData['conventional'][$segmentName] ?? 0,
-                                'remarks' => "Conventional - {$segmentName}",
-                            ],
-                        );
-                    }
-                }
+                // A branch belongs to exactly ONE banking type. Only seed the segment
+                // rows for the branch's own type, otherwise the opposite set of columns
+                // fills with figures the branch can never actually report.
+                $bankingTypeId = $branch->bankingType_id;
+                $bankingKey = $bankingTypeId === 2 ? 'ifb' : 'conventional';
+                $bankingLabel = $bankingTypeId === 2 ? 'IFB' : 'Conventional';
 
-                // Save IFB segments
                 foreach (['Corporate', 'Retail', 'MSME'] as $segmentName) {
                     $segment = $segments->get($segmentName);
                     if ($segment) {
@@ -146,12 +133,12 @@ class SampleDepositPerformanceSeeder extends Seeder
                             [
                                 'branch_id' => $branch->id,
                                 'business_day' => $businessDay,
-                                'banking_type_id' => 2, // IFB
+                                'banking_type_id' => $bankingTypeId,
                                 'business_segment_id' => $segment->id,
                             ],
                             [
-                                'amount' => $branchData['ifb'][$segmentName] ?? 0,
-                                'remarks' => "IFB - {$segmentName}",
+                                'amount' => $branchData[$bankingKey][$segmentName] ?? 0,
+                                'remarks' => "{$bankingLabel} - {$segmentName}",
                             ],
                         );
                     }

@@ -34,7 +34,18 @@ class DailyAccountOpeningsTable
                 TextColumn::make('branch.bankingType.name')
                     ->label('Type')
                     ->badge()
-                    ->toggleable(),
+                    ->color(fn (string $state): string => match ($state) {
+                        'Conventional Banking' => 'primary',
+                        'Islamic Banking (IFB)' => 'warning',
+                        default => 'gray',
+                    })
+                    ->sortable(query: fn (Builder $query, string $direction) => $query
+                        ->leftJoin('branches', 'daily_account_openings.branch_id', '=', 'branches.id')
+                        ->leftJoin('banking_types', 'branches.bankingType_id', '=', 'banking_types.id')
+                        ->orderBy('banking_types.name', $direction))
+                    ->toggleable()
+                    ->width('140px')
+                    ->extraAttributes(['style' => 'font-size: 12px; padding: 3px 6px;']),
 
                 TextColumn::make('business_day')
                     ->label('Date')

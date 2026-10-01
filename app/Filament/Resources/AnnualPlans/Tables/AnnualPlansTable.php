@@ -34,8 +34,13 @@ class AnnualPlansTable
                     ->label('Accounts')
                     ->sortable(),
 
-                TextColumn::make('supperappsubscription')
+                TextColumn::make('super_app_subscriptions')
                     ->label('Super App Subscriptions')
+                    ->sortable(),
+
+                TextColumn::make('foreign_currency_target')
+                    ->label('Foreign Currency Target')
+                    ->numeric(2)
                     ->sortable(),
 
                 TextColumn::make('creator.name')

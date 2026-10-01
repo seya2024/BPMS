@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\DailyAccountPerformances\Schemas;
 
-use Filament\Forms\Components\DatePicker;
+use App\Filament\Support\BusinessDay;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -15,10 +15,7 @@ class DailyAccountPerformanceForm
         return $schema
             ->components([
 
-                DatePicker::make('business_day')
-                    ->label('Business Day')
-                    ->native(false)
-                    ->required(),
+                BusinessDay::picker(),
 
                 Select::make('branch_id')
                     ->relationship('branch', 'name')

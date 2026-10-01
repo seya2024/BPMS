@@ -39,11 +39,17 @@ class AnnualPlanForm
                     ->integer()
                     ->required(),
 
-                TextInput::make('supperappsubscription')
+                TextInput::make('super_app_subscriptions')
                     ->label('Super App Subscription Target')
                     ->numeric()
                     ->integer()
                     ->required(),
+
+                TextInput::make('foreign_currency_target')
+                    ->label('Foreign Currency Generation Target')
+                    ->numeric()
+                    ->prefix('ETB')
+                    ->default(0),
 
                 Textarea::make('remarks')
                     ->label('Remarks')

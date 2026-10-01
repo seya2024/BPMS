@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Widgets\Concerns\HasDistrictFilter;
 use App\Models\District;
 use App\Models\BranchDepositPlan;
 use App\Models\DailyDepositPerformance;
@@ -10,9 +11,27 @@ use Filament\Widgets\PieChartWidget;
 
 class DistrictPerformanceChart extends PieChartWidget
 {
+    use HasDistrictFilter;
+
     protected ?string $heading = 'Deposit Achievement by District';
 
+    /** Half the dashboard row, matching the other charts. */
+    protected int | string | array $columnSpan = 2;
+
+    /** Custom view so the district filter renders in the widget header. */
+    protected string $view = 'widgets.analytics-chart';
+
+    /** Cap the canvas height so the card stays compact. */
+    protected ?string $maxHeight = '240px';
+
     protected static ?int $sort = 4;
+
+        protected function getFilters(): ?array
+    {
+        return [
+            '' => 'All districts',
+        ] + District::pluck('name', 'id')->toArray();
+    }
 
     protected function getData(): array
     {

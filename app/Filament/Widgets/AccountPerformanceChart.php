@@ -11,6 +11,12 @@ class AccountPerformanceChart extends LineChartWidget
 {
     protected ?string $heading = 'Account Performance vs Target';
 
+    /** One third of the dashboard row, matching the analytics widgets. */
+    protected int | string | array $columnSpan = 2;
+
+    /** Cap the canvas height so the card stays compact in a narrow column. */
+    protected ?string $maxHeight = '240px';
+
     protected static ?int $sort = 2;
 
     protected function getData(): array

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Actions;
 
+use App\Filament\Support\Notify;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 
 class RejectPlanAction extends Action
@@ -51,12 +51,14 @@ class RejectPlanAction extends Action
                     }
                 }
 
-                Notification::make()
-                    ->danger()
-                    ->title('Plan Rejected')
-                    ->body('The plan has been rejected.')
-                    ->send();
+                // warning(), not danger(): rejecting a plan is a normal review
+                // outcome. Red here would read as a system failure.
+                Notify::declined(
+                    'Plan rejected',
+                    'The plan was sent back for revision and does not count towards attainment until it is resubmitted.'
+                );
             })
             ->visible(fn (Model $record) => $record->canBeApproved());
     }
 }
+

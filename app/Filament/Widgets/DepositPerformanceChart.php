@@ -7,12 +7,28 @@ use App\Models\BranchDepositPlan;
 use App\Models\DailyDepositPerformance;
 use Carbon\Carbon;
 use Filament\Widgets\BarChartWidget;
+use App\Models\District;
 
 class DepositPerformanceChart extends BarChartWidget
 {
     protected ?string $heading = 'Deposit Performance vs Target';
 
+    /** One third of the dashboard row, matching the analytics widgets. */
+    protected int | string | array $columnSpan = 1;
+
+    /** Cap the canvas height so the card stays compact in a narrow column. */
+    protected ?string $maxHeight = '220px';
+
     protected static ?int $sort = 1;
+
+     
+    protected function getFilters(): ?array
+    {
+        return [
+            '' => 'All districts',
+        ] + District::pluck('name', 'id')->toArray();
+    }
+
 
     protected function getData(): array
     {

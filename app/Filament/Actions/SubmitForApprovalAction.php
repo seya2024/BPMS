@@ -2,9 +2,9 @@
 
 namespace App\Filament\Actions;
 
+use App\Filament\Support\Notify;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 
 class SubmitForApprovalAction extends Action
@@ -47,12 +47,12 @@ class SubmitForApprovalAction extends Action
                     ));
                 }
 
-                Notification::make()
-                    ->success()
-                    ->title('Submitted for Approval')
-                    ->body('The plan has been submitted for approval.')
-                    ->send();
+                Notify::done(
+                    'Submitted for approval',
+                    'Approvers have been notified. The plan is locked until it is approved or rejected.'
+                );
             })
             ->visible(fn (Model $record) => $record->canBeSubmitted());
     }
 }
+

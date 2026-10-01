@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Support\Notify;
 use App\Models\UserGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -9,7 +10,6 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -166,7 +166,11 @@ class UsersTable
                         ->requiresConfirmation()
                         ->action(function ($records): void {
                             $records->each->update(['is_active' => false, 'status' => 'inactive']);
-                            Notification::make()->success()->title($records->count() . ' users deactivated')->send();
+                            Notify::done(
+            'Users deactivated',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user', 'users')
+                . ' deactivated. Their data is kept and the accounts can be reactivated.'
+        );
                         }),
 
                     // Bulk Lock
@@ -177,7 +181,11 @@ class UsersTable
                         ->requiresConfirmation()
                         ->action(function ($records): void {
                             $records->each->update(['is_locked' => true, 'status' => 'locked', 'locked_at' => now()]);
-                            Notification::make()->success()->title($records->count() . ' users locked')->send();
+                            Notify::done(
+            'Users locked',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user is', 'users are')
+                . ' now locked out until an administrator unlocks them.'
+        );
                         }),
 
                     // Bulk Unlock
@@ -188,7 +196,11 @@ class UsersTable
                         ->requiresConfirmation()
                         ->action(function ($records): void {
                             $records->each->update(['is_locked' => false, 'status' => 'active', 'failed_login_attempts' => 0]);
-                            Notification::make()->success()->title($records->count() . ' users unlocked')->send();
+                            Notify::done(
+            'Users unlocked',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user', 'users')
+                . ' can sign in again. Failed sign-in attempts were reset to zero.'
+        );
                         }),
 
                     // Bulk Reset Password
@@ -213,7 +225,11 @@ class UsersTable
                                 'must_change_password' => $data['force_change'] ?? false,
                                 'password_changed_at' => now(),
                             ]);
-                            Notification::make()->success()->title($records->count() . ' passwords reset')->send();
+                            Notify::done(
+            'Passwords reset',
+            'A new password was set for ' . $records->count() . ' '
+                . Notify::plural($records->count(), 'user', 'users') . '. Share them securely.'
+        );
                         }),
 
                     // Bulk Force Password Change
@@ -224,7 +240,11 @@ class UsersTable
                         ->requiresConfirmation()
                         ->action(function ($records): void {
                             $records->each->update(['must_change_password' => true]);
-                            Notification::make()->success()->title($records->count() . ' users must change password')->send();
+                            Notify::done(
+            'Password change required',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user', 'users')
+                . ' will be asked to set a new password at their next sign-in.'
+        );
                         }),
 
                     // Bulk Assign Role
@@ -241,7 +261,11 @@ class UsersTable
                         ])
                         ->action(function ($records, array $data): void {
                             $records->each->assignRole($data['role']);
-                            Notification::make()->success()->title($records->count() . ' users assigned role')->send();
+                            Notify::done(
+            'Role assigned',
+            'The ' . $data['role'] . ' role was assigned to ' . $records->count() . ' '
+                . Notify::plural($records->count(), 'user', 'users') . '. Permissions apply immediately.'
+        );
                         }),
 
                     // Bulk Remove Role
@@ -258,7 +282,11 @@ class UsersTable
                         ])
                         ->action(function ($records, array $data): void {
                             $records->each->removeRole($data['role']);
-                            Notification::make()->success()->title($records->count() . ' users removed role')->send();
+                            Notify::declined(
+            'Role removed',
+            'The ' . $data['role'] . ' role was removed from ' . $records->count() . ' '
+                . Notify::plural($records->count(), 'user', 'users') . '.'
+        );
                         }),
 
                     // Bulk Assign Branch
@@ -285,7 +313,11 @@ class UsersTable
                                     $record->update(['branch_id' => $data['branch_id']]);
                                 }
                             }
-                            Notification::make()->success()->title($records->count() . ' users assigned branch')->send();
+                            Notify::done(
+            'Branch assigned',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user', 'users')
+                . ' assigned to the selected branch.'
+        );
                         }),
 
                     // Bulk Assign District
@@ -302,7 +334,11 @@ class UsersTable
                         ])
                         ->action(function ($records, array $data): void {
                             $records->each->update(['district_id' => $data['district_id']]);
-                            Notification::make()->success()->title($records->count() . ' users assigned district')->send();
+                            Notify::done(
+            'District assigned',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user', 'users')
+                . ' assigned to the selected district.'
+        );
                         }),
 
                     // Bulk Add to Group
@@ -321,7 +357,11 @@ class UsersTable
                             foreach ($records as $record) {
                                 $record->groups()->syncWithoutDetaching([$data['group_id']]);
                             }
-                            Notification::make()->success()->title($records->count() . ' users added to group')->send();
+                            Notify::done(
+            'Added to group',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user', 'users')
+                . ' added to the selected group.'
+        );
                         }),
 
                     // Bulk Remove from Group
@@ -340,7 +380,11 @@ class UsersTable
                             foreach ($records as $record) {
                                 $record->groups()->detach($data['group_id']);
                             }
-                            Notification::make()->success()->title($records->count() . ' users removed from group')->send();
+                            Notify::declined(
+            'Removed from group',
+            $records->count() . ' ' . Notify::plural($records->count(), 'user', 'users')
+                . ' removed from the selected group.'
+        );
                         }),
 
                     // Bulk Revoke Sessions
@@ -353,7 +397,11 @@ class UsersTable
                             foreach ($records as $record) {
                                 $record->tokens()->delete();
                             }
-                            Notification::make()->success()->title($records->count() . ' sessions revoked')->send();
+                            Notify::done(
+            'Sessions revoked',
+            'Active sessions were ended for ' . $records->count() . ' '
+                . Notify::plural($records->count(), 'user', 'users') . '. They will need to sign in again.'
+        );
                         }),
 
                     DeleteBulkAction::make(),
@@ -361,3 +409,4 @@ class UsersTable
             ]);
     }
 }
+

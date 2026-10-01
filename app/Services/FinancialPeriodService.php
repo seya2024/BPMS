@@ -2,20 +2,25 @@
 
 namespace App\Services;
 
-use App\Models\FinancialYear;
 use App\Models\FinancialPeriod;
+use App\Models\FinancialYear;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class FinancialPeriodService
 {
-    public function generate(FinancialYear $year): void
+    /**
+     * Creates the four quarterly periods for a financial year.
+     *
+     * @return int  Number of periods created, so the caller can report it
+     *              accurately. Zero when the year already had periods.
+     */
+    public function generate(FinancialYear $year): int
     {
-        DB::transaction(function () use ($year) {
-
+        return DB::transaction(function () use ($year) {
             // prevent duplicate generation
             if ($year->periods()->exists()) {
-                return;
+                return 0;
             }
 
             $startYear = Carbon::parse($year->start_date)->year; // 2026
@@ -42,6 +47,8 @@ class FinancialPeriodService
                     'status' => 'OPEN',
                 ]);
             }
+
+            return count($periods);
         });
     }
 }

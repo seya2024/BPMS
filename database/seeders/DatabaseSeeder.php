@@ -19,6 +19,10 @@ class DatabaseSeeder extends Seeder
             Roles\RolesAndPermissionsSeeder::class,
             TestDataSeeder::class,
             SampleDepositPerformanceSeeder::class,
+            BranchPlanSeeder::class,
+            PerformanceHistorySeeder::class,
+            KpiTrackingHistorySeeder::class,
+            ReferenceDataSeeder::class,
         ]);
 
         // Create user groups

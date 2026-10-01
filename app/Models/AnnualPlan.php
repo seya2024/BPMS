@@ -12,7 +12,8 @@ class AnnualPlan extends Model
         'district_id',
         'deposit',
         'account',
-        'supperappsubscription',
+        'super_app_subscriptions',
+        'foreign_currency_target',
         'remarks',
         'created_by',
         'approval_status',
@@ -24,7 +25,8 @@ class AnnualPlan extends Model
     protected $casts = [
         'deposit' => 'decimal:2',
         'account' => 'integer',
-        'supperappsubscription' => 'integer',
+        'super_app_subscriptions' => 'integer',
+        'foreign_currency_target' => 'decimal:2',
         'approved_at' => 'datetime',
     ];
 

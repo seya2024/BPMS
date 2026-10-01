@@ -16,6 +16,13 @@ class BranchAccountPlansTable
     public static function configure(Table $table): Table
     {
         return $table
+            // Same 3-level lazy chain as the deposit plan table; eager load it so
+            // the page costs 4 queries instead of 4 per row.
+            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query->with([
+                'annualAccountPlan.annualPlan.district',
+                'annualAccountPlan.annualPlan.financialYear',
+                'branch',
+            ]))
             ->columns([
   TextColumn::make('annualAccountPlan')
     ->label('District - Annual Account Plan')

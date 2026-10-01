@@ -2,20 +2,24 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\DailyBusinessPerformance;
+use App\Filament\Pages\Dashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use App\Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -43,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->databaseTransactions(false)
             ->pages([
                 Dashboard::class,
+                 DailyBusinessPerformance::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
@@ -83,5 +88,16 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    /**
+     * Renders the copyright notice at the bottom of every admin page.
+     */
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::PAGE_FOOTER_WIDGETS_AFTER,
+            fn (): string => Blade::render('<x-copyright />'),
+        );
     }
 }

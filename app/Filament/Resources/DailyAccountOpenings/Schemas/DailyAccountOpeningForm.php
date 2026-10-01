@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\DailyAccountOpenings\Schemas;
 
-use Filament\Forms\Components\DatePicker;
+use App\Filament\Support\BusinessDay;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class DailyAccountOpeningForm
@@ -28,10 +28,7 @@ class DailyAccountOpeningForm
                                     ->required()
                                     ->columnSpan(1),
 
-                                DatePicker::make('business_day')
-                                    ->label('Business Day')
-                                    ->required()
-                                    ->default(now())
+                                BusinessDay::picker()
                                     ->columnSpan(1),
 
                                 TextInput::make('conventional_accounts')

@@ -30,7 +30,8 @@ class AnnualPlanResource extends JsonResource
             }),
             'deposit' => $this->deposit,
             'account' => $this->account,
-            'supperappsubscription' => $this->supperappsubscription,
+            'super_app_subscriptions' => $this->super_app_subscriptions,
+            'foreign_currency_target' => $this->foreign_currency_target,
             'approval_status' => $this->approval_status,
             'created_by' => $this->whenLoaded('creator', function () {
                 return [

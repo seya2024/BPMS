@@ -147,10 +147,13 @@ class TestDataSeeder extends Seeder
             FinancialPeriod::updateOrCreate(['id' => $data['id']], $data);
         }
 
-        // Annual Plans
+        // Annual Plans - use the super admin's ID instead of hardcoded 1
+        $superAdmin = User::where('email', 'seidm2031@gmail.com')->firstOrFail();
+        $superAdminId = $superAdmin->id;
+
         $annualPlansData = [
-            ['id' => 4, 'financial_year_id' => 5, 'district_id' => 1, 'deposit' => 1000000000.00, 'account' => 50000, 'supperappsubscription' => 20000, 'created_by' => 1],
-            ['id' => 5, 'financial_year_id' => 5, 'district_id' => 9, 'deposit' => 500000000.00, 'account' => 30000, 'supperappsubscription' => 20000, 'created_by' => 1],
+            ['id' => 4, 'financial_year_id' => 5, 'district_id' => 1, 'deposit' => 1000000000.00, 'account' => 50000, 'super_app_subscriptions' => 20000, 'foreign_currency_target' => 5000000.00, 'created_by' => $superAdminId],
+            ['id' => 5, 'financial_year_id' => 5, 'district_id' => 9, 'deposit' => 500000000.00, 'account' => 30000, 'super_app_subscriptions' => 20000, 'foreign_currency_target' => 2500000.00, 'created_by' => $superAdminId],
         ];
 
         foreach ($annualPlansData as $data) {
@@ -203,8 +206,10 @@ class TestDataSeeder extends Seeder
 
         // KPIs
         $kpisData = [
-            ['id' => 1, 'name' => 'Account Opening', 'category_id' => 1, 'unit' => 'count', 'calculation_method' => 'Existing plus new Active account'],
-            ['id' => 2, 'name' => 'Deposit', 'category_id' => 2, 'unit' => 'amount', 'calculation_method' => 'Last Jun plus new deposit'],
+            ['id' => 1, 'name' => 'Account Opening', 'category_id' => 1, 'unit' => 'Accounts', 'calculation_method' => 'Existing plus new Active account'],
+            ['id' => 2, 'name' => 'Deposit', 'category_id' => 2, 'unit' => 'ETB', 'calculation_method' => 'Last Jun plus new deposit'],
+            ['id' => 3, 'name' => 'Super App Subscriptions', 'category_id' => 3, 'unit' => 'Subscriptions', 'calculation_method' => 'Cumulative active super app subscriptions vs district annual target'],
+            ['id' => 4, 'name' => 'Foreign Currency Generation', 'category_id' => 2, 'unit' => 'ETB', 'calculation_method' => 'Cumulative foreign currency generated vs district annual target'],
         ];
 
         foreach ($kpisData as $data) {

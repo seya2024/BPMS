@@ -2,19 +2,19 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\BusinessDay;
+use App\Filament\Support\Notify;
 use App\Models\Branch;
 use App\Models\DailyAccountOpening;
 use App\Models\District;
+use App\Support\DailyRecord;
 use Filament\Actions\Action;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use UnitEnum;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
@@ -27,7 +27,32 @@ use Filament\Support\Enums\Alignment;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
+/**
+ * Batch account opening entry for one district and one business day.
+ *
+ * TWO RULES govern this page and are easy to break. Read before editing.
+ *
+ * 1. BUSINESS DAY IS ALWAYS IN THE PAST.
+ *    The picker defaults to yesterday and validates `before:today`, so a
+ *    today-dated row can never be stored.
+ *
+ * 2. THE CONVENTENTIAL / IFB RULE IS ASYMMETRIC, NOT SYMMETRIC.
+ *    A Conventional branch reports BOTH banking types - both columns stay
+ *    editable in the Conventional section. An IFB branch has no Conventional
+ *    business, so in the IFB section the Conventional column is disabled,
+ *    dehydrated away, and stored as SQL NULL. NULL is deliberate:
+ *    conventional_accounts is nullable precisely so "not applicable" stays
+ *    distinguishable from "reported zero". Writing 0 there would make every IFB
+ *    branch look like it had zero Conventional openings.
+ *
+ *    The disabled field uses ->dehydrated(false) so it never reaches the payload;
+ *    save() therefore sets NULL explicitly rather than reading a missing key.
+ *
+ * Writes go through DailyRecord::upsert() rather than updateOrCreate(); see that
+ * class for why the date comparison must be driver-safe.
+ */
 class BatchDailyAccountOpenings extends Page
 {
     protected static ?string $title = 'Batch Account Openings Entry';
@@ -106,10 +131,8 @@ class BatchDailyAccountOpenings extends Page
                                     ->placeholder('Select district...')
                                     ->columnSpan(3),
 
-                                DatePicker::make('business_day')
-                                    ->label('Business Day')
+                                BusinessDay::picker()
                                     ->live()
-                                    ->native(false)
                                     ->afterStateUpdated(
                                         function (
                                             Set $set,
@@ -125,41 +148,41 @@ class BatchDailyAccountOpenings extends Page
                                             );
                                         }
                                     )
-                                    ->required()
-                                    ->rules([
-                                        'required',
-                                        'date',
-                                        'before:today',
-                                    ])
-                                    ->validationMessages([
-                                        'before' =>
-                                            'Business day must be yesterday or earlier (today is not allowed).',
-                                    ])
-                                    ->placeholder('Select date...')
                                     ->columnSpan(1),
                             ]),
                     ]),
 
                 Section::make('Conventional Banking')
-                    ->description('Enter account openings for Conventional Banking branches.')
+                    ->description('Conventional branches report both banking types, so enter Conventional and IFB openings here.')
                     ->columnSpanFull()
                     ->compact()
                     ->schema([
-                        $this->buildBankingTypeRepeater('conventional', 'Conventional Banking'),
+                        $this->buildBankingTypeRepeater('conventional', 'Conventional Banking', 1),
                     ]),
 
                 Section::make('Islamic Banking (IFB)')
-                    ->description('Enter account openings for Islamic Banking (IFB) branches.')
+                    ->description('IFB branches have no Conventional business, so the Conventional column is disabled and saved as null.')
                     ->columnSpanFull()
                     ->compact()
                     ->schema([
-                        $this->buildBankingTypeRepeater('ifb', 'Islamic Banking (IFB)'),
+                        $this->buildBankingTypeRepeater('ifb', 'Islamic Banking (IFB)', 2),
                     ]),
             ]);
     }
 
-    protected function buildBankingTypeRepeater(string $key, string $label): Repeater
+    /**
+     * Builds the per-branch entry table for one banking type section.
+     *
+     * A Conventional branch reports both banking types, so both columns stay
+     * editable in the Conventional section. An IFB branch has no Conventional
+     * business, so in the IFB section the Conventional column is disabled and
+     * dehydrated away, which makes save() store NULL for it.
+     *
+     * @param  int  $bankingTypeId  1 = Conventional, 2 = IFB
+     */
+    protected function buildBankingTypeRepeater(string $key, string $label, int $bankingTypeId): Repeater
     {
+        $conventionalApplies = $bankingTypeId === 1;
         return Repeater::make("entries.{$key}")
             ->label($label)
             ->default([])
@@ -207,21 +230,26 @@ class BatchDailyAccountOpenings extends Page
                     ->integer()
                     ->minValue(0)
                     ->maxValue(999999)
-                    ->default(0)
-                    ->required()
-                    ->rules([
+                    // IFB branches have no Conventional business: keep the column
+                    // visible for a consistent table, but make it inert and drop
+                    // it from the submitted payload so save() writes NULL.
+                    ->default($conventionalApplies ? 0 : null)
+                    ->disabled(! $conventionalApplies)
+                    ->dehydrated($conventionalApplies)
+                    ->required($conventionalApplies)
+                    ->rules($conventionalApplies ? [
                         'required',
                         'integer',
                         'min:0',
                         'max:999999',
-                    ])
+                    ] : [])
                     ->validationMessages([
                         'required' => 'Required.',
                         'integer' => 'Must be a whole number.',
                         'min' => 'Cannot be negative.',
                         'max' => 'Max 999,999.',
                     ])
-                    ->placeholder('0')
+                    ->placeholder($conventionalApplies ? '0' : 'n/a')
                     ->step(1)
                     ->extraAttributes(['style' => 'width: 150px; padding: 2px 4px; text-align: right; border: 1px solid #e5e7eb; height: 28px;'])
                     ->inputMode('numeric'),
@@ -284,7 +312,9 @@ class BatchDailyAccountOpenings extends Page
                         'string',
                     ])
                     ->placeholder('Notes...')
-                    ->extraAttributes(['style' => 'width: 150%; padding: 2px 4px; border: 1px solid #e5e7eb; height: 28px;']),
+                    // Was 150%, which overflowed the column. 100% matches the
+                    // deposit batch page.
+                    ->extraAttributes(['style' => 'width: 100%; padding: 2px 4px; border: 1px solid #e5e7eb; height: 28px;']),
             ])
             ->columnSpanFull()
             ->rules([
@@ -387,6 +417,7 @@ class BatchDailyAccountOpenings extends Page
         foreach ($conventionalBranches as $branch) {
             $record = $existing->get($branch->id);
 
+            // Conventional branches report both banking types.
             $conventionalEntries[] = [
                 'branch_id' => $branch->id,
                 'branch_name' => $branch->name,
@@ -400,10 +431,12 @@ class BatchDailyAccountOpenings extends Page
         foreach ($ifbBranches as $branch) {
             $record = $existing->get($branch->id);
 
+            // IFB branches have no Conventional business, so that column is null
+            // rather than 0: "not applicable" must not read as "reported zero".
             $ifbEntries[] = [
                 'branch_id' => $branch->id,
                 'branch_name' => $branch->name,
-                'conventional_accounts' => $record?->conventional_accounts ?? 0,
+                'conventional_accounts' => null,
                 'ifb_accounts' => $record?->ifb_accounts ?? 0,
                 'target_accounts' => $record?->target_accounts ?? 0,
                 'remarks' => $record?->remarks ?? '',
@@ -432,37 +465,34 @@ class BatchDailyAccountOpenings extends Page
         $ifbEntries = $data['entries']['ifb'] ?? [];
 
         if (blank($conventionalEntries) && blank($ifbEntries)) {
-            Notification::make()
-                ->warning()
-                ->title('Nothing to save')
-                ->body(
-                    'Select a district office that has branches, then enter the openings.'
-                )
-                ->send();
+            Notify::nothingToSave('account openings');
 
             return;
         }
 
         $saved = 0;
+        $updated = 0;
 
-        DB::transaction(function () use (
-            $conventionalEntries,
-            $ifbEntries,
-            $businessDay,
-            &$saved
-        ): void {
+        try {
+            DB::transaction(function () use (
+                $conventionalEntries,
+                $ifbEntries,
+                $businessDay,
+                &$saved,
+                &$updated
+            ): void {
             // Save Conventional entries
             foreach ($conventionalEntries as $entry) {
                 if (blank($entry['branch_id'] ?? null)) {
                     continue;
                 }
 
-                DailyAccountOpening::query()->updateOrCreate(
+                $row = DailyRecord::upsert(
+                    DailyAccountOpening::class,
+                    $entry['branch_id'],
+                    $businessDay,
                     [
-                        'branch_id' => $entry['branch_id'],
-                        'business_day' => $businessDay,
-                    ],
-                    [
+                        // Conventional branches report both banking types.
                         'conventional_accounts' =>
                             (int) ($entry['conventional_accounts'] ?? 0),
 
@@ -480,6 +510,12 @@ class BatchDailyAccountOpenings extends Page
                         'recorded_by' => auth()->id(),
                     ]
                 );
+
+                // wasRecentlyCreated comes free from the upsert; a separate
+                // exists() check would be one extra query per branch.
+                if (! $row->wasRecentlyCreated) {
+                    $updated++;
+                }
 
                 $saved++;
             }
@@ -490,14 +526,15 @@ class BatchDailyAccountOpenings extends Page
                     continue;
                 }
 
-                DailyAccountOpening::query()->updateOrCreate(
+                $row = DailyRecord::upsert(
+                    DailyAccountOpening::class,
+                    $entry['branch_id'],
+                    $businessDay,
                     [
-                        'branch_id' => $entry['branch_id'],
-                        'business_day' => $businessDay,
-                    ],
-                    [
-                        'conventional_accounts' =>
-                            (int) ($entry['conventional_accounts'] ?? 0),
+                        // An IFB branch has no Conventional business. The form
+                        // disables and dehydrates that input away, so the key is
+                        // absent here and NULL is stored deliberately.
+                        'conventional_accounts' => null,
 
                         'ifb_accounts' =>
                             (int) ($entry['ifb_accounts'] ?? 0),
@@ -514,19 +551,22 @@ class BatchDailyAccountOpenings extends Page
                     ]
                 );
 
+                // wasRecentlyCreated comes free from the upsert; a separate
+                // exists() check would be one extra query per branch.
+                if (! $row->wasRecentlyCreated) {
+                    $updated++;
+                }
+
                 $saved++;
             }
-        });
+            });
+        } catch (Throwable $e) {
+            Notify::saveFailed('account openings', $e);
 
-        Notification::make()
-            ->success()
-            ->title('Batch entry saved')
-            ->body(
-                "{$saved} branch opening" .
-                    ($saved === 1 ? '' : 's') .
-                    " saved for {$businessDay}."
-            )
-            ->send();
+            return;
+        }
+
+        Notify::batchSaved('account openings', $saved, $businessDay, updatedCount: $updated);
 
         // Reload the rows so the table reflects the persisted values.
         $this->data['entries'] = $this->buildEntries(

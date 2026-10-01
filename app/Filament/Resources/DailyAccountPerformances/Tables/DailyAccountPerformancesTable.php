@@ -8,12 +8,14 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DailyAccountPerformancesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('daily_account_performances.business_day', 'desc')
             ->columns([
                TextColumn::make('business_day')
                     ->label('Business Day')
@@ -28,12 +30,29 @@ class DailyAccountPerformancesTable
                 TextColumn::make('branch.district.name')
                     ->label('District')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->extraAttributes(['style' => 'font-size: 12px; padding: 3px 6px;']),
+
+                TextColumn::make('branch.bankingType.name')
+                    ->label('Type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Conventional Banking' => 'primary',
+                        'Islamic Banking (IFB)' => 'warning',
+                        default => 'gray',
+                    })
+                    ->sortable(query: fn (Builder $query, string $direction) => $query
+                        ->leftJoin('branches', 'daily_account_performances.branch_id', '=', 'branches.id')
+                        ->leftJoin('banking_types', 'branches.bankingType_id', '=', 'banking_types.id')
+                        ->orderBy('banking_types.name', $direction))
+                    ->width('140px')
+                    ->extraAttributes(['style' => 'font-size: 12px; padding: 3px 6px;']),
 
                 TextColumn::make('total_accounts')
                     ->label('Total')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->extraAttributes(['style' => 'font-size: 12px; padding: 3px 6px;']),
 
                 TextColumn::make('active_accounts')
                     ->label('Active')

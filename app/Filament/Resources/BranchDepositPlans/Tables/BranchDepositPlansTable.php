@@ -9,12 +9,21 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BranchDepositPlansTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            // The District column walks annualDepositPlan -> annualPlan -> district
+            // and -> financialYear. Left lazy that is 4 queries per row; eager
+            // loading the whole chain collapses it to 4 queries per page.
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
+                'annualDepositPlan.annualPlan.district',
+                'annualDepositPlan.annualPlan.financialYear',
+                'branch',
+            ]))
             ->columns([
      
 

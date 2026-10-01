@@ -3,13 +3,13 @@
 namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Support\Notify;
 use App\Models\UserGroup;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewUser extends ViewRecord
@@ -29,7 +29,10 @@ class ViewUser extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->update(['is_active' => true, 'status' => 'active']);
-                    Notification::make()->success()->title('User Activated')->send();
+                    Notify::done(
+                        'User activated',
+                        $this->record->name . ' can now sign in and use the system.'
+                    );
                 })
                 ->visible(fn () => !$this->record->is_active || $this->record->status !== 'active'),
 
@@ -41,7 +44,10 @@ class ViewUser extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->update(['is_active' => false, 'status' => 'inactive']);
-                    Notification::make()->success()->title('User Deactivated')->send();
+                    Notify::done(
+                        'User deactivated',
+                        $this->record->name . ' can no longer sign in. Their data is kept and the account can be reactivated.'
+                    );
                 })
                 ->visible(fn () => $this->record->is_active && $this->record->status === 'active'),
 
@@ -53,7 +59,10 @@ class ViewUser extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->update(['is_locked' => true, 'status' => 'locked', 'locked_at' => now()]);
-                    Notification::make()->success()->title('User Locked')->send();
+                    Notify::done(
+                        'User locked',
+                        $this->record->name . ' is locked out until an administrator unlocks the account.'
+                    );
                 })
                 ->visible(fn () => !$this->record->is_locked),
 
@@ -65,7 +74,10 @@ class ViewUser extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->update(['is_locked' => false, 'status' => 'active', 'failed_login_attempts' => 0]);
-                    Notification::make()->success()->title('User Unlocked')->send();
+                    Notify::done(
+                        'User unlocked',
+                        $this->record->name . ' can sign in again. Failed sign-in attempts have been reset to zero.'
+                    );
                 })
                 ->visible(fn () => $this->record->is_locked),
 
@@ -91,7 +103,12 @@ class ViewUser extends ViewRecord
                         'must_change_password' => $data['force_change'] ?? false,
                         'password_changed_at' => now(),
                     ]);
-                    Notification::make()->success()->title('Password Reset')->send();
+                    Notify::done(
+                        'Password reset',
+                        ($data['force_change'] ?? false)
+                            ? 'A new password was set for ' . $this->record->name . '. They must choose a new one at next sign-in.'
+                            : 'A new password was set for ' . $this->record->name . '. Share it with them securely.'
+                    );
                 }),
 
             // Force Password Change
@@ -102,7 +119,10 @@ class ViewUser extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->update(['must_change_password' => true]);
-                    Notification::make()->success()->title('Password Change Forced')->send();
+                    Notify::done(
+                        'Password change required',
+                        $this->record->name . ' will be asked to set a new password at their next sign-in.'
+                    );
                 })
                 ->visible(fn () => !$this->record->must_change_password),
 
@@ -120,7 +140,10 @@ class ViewUser extends ViewRecord
                 ])
                 ->action(function (array $data): void {
                     $this->record->assignRole($data['role']);
-                    Notification::make()->success()->title('Role Assigned')->send();
+                    Notify::done(
+                        'Role assigned',
+                        $this->record->name . ' now holds the ' . $data['role'] . ' role. Their permissions apply immediately.'
+                    );
                 }),
 
             // Remove Role
@@ -136,7 +159,11 @@ class ViewUser extends ViewRecord
                 ])
                 ->action(function (array $data): void {
                     $this->record->removeRole($data['role']);
-                    Notification::make()->success()->title('Role Removed')->send();
+                    Notify::declined(
+                        'Role removed',
+                        'The ' . $data['role'] . ' role was taken from ' . $this->record->name . '.'
+                            . ($this->record->roles->isEmpty() ? ' They now have no roles and cannot access the system.' : '')
+                    );
                 })
                 ->visible(fn () => $this->record->roles->isNotEmpty()),
 
@@ -162,7 +189,15 @@ class ViewUser extends ViewRecord
                     if ($data['is_primary'] ?? false) {
                         $this->record->update(['branch_id' => $data['branch_id']]);
                     }
-                    Notification::make()->success()->title('Branch Assigned')->send();
+
+                    $branchName = \App\Models\Branch::whereKey($data['branch_id'])->value('name') ?? 'the selected branch';
+
+                    Notify::done(
+                        'Branch assigned',
+                        ($data['is_primary'] ?? false)
+                            ? $branchName . ' is now ' . $this->record->name . "'s primary branch."
+                            : $branchName . ' was added to ' . $this->record->name . "'s branch assignments."
+                    );
                 }),
 
             // Assign District
@@ -179,7 +214,11 @@ class ViewUser extends ViewRecord
                 ])
                 ->action(function (array $data): void {
                     $this->record->update(['district_id' => $data['district_id']]);
-                    Notification::make()->success()->title('District Assigned')->send();
+                    $districtName = \App\Models\District::whereKey($data['district_id'])->value('name') ?? 'the selected district';
+                    Notify::done(
+                        'District assigned',
+                        $this->record->name . ' is now assigned to ' . $districtName . '.'
+                    );
                 }),
 
             // Add to Group
@@ -196,7 +235,11 @@ class ViewUser extends ViewRecord
                 ])
                 ->action(function (array $data): void {
                     $this->record->groups()->syncWithoutDetaching([$data['group_id']]);
-                    Notification::make()->success()->title('Added to Group')->send();
+                    $groupName = UserGroup::whereKey($data['group_id'])->value('name') ?? 'the selected group';
+                    Notify::done(
+                        'Added to group',
+                        $this->record->name . ' now belongs to ' . $groupName . '.'
+                    );
                 }),
 
             // Remove from Group
@@ -212,7 +255,11 @@ class ViewUser extends ViewRecord
                 ])
                 ->action(function (array $data): void {
                     $this->record->groups()->detach($data['group_id']);
-                    Notification::make()->success()->title('Removed from Group')->send();
+                    $groupName = UserGroup::whereKey($data['group_id'])->value('name') ?? 'the group';
+                    Notify::declined(
+                        'Removed from group',
+                        $this->record->name . ' no longer belongs to ' . $groupName . '.'
+                    );
                 })
                 ->visible(fn () => $this->record->groups->isNotEmpty()),
 
@@ -223,8 +270,13 @@ class ViewUser extends ViewRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->action(function (): void {
-                    $this->record->tokens()->delete();
-                    Notification::make()->success()->title('Sessions Revoked')->send();
+                    $count = $this->record->tokens()->delete();
+                    Notify::done(
+                        'Sessions revoked',
+                        $count > 0
+                            ? $count . ' active ' . Notify::plural($count, 'session', 'sessions') . ' ended. ' . $this->record->name . ' will need to sign in again.'
+                            : 'There were no active sessions to end for ' . $this->record->name . '.'
+                    );
                 }),
 
             // Approve
@@ -240,7 +292,10 @@ class ViewUser extends ViewRecord
                         'approved_by' => auth()->id(),
                         'approved_at' => now(),
                     ]);
-                    Notification::make()->success()->title('User Approved')->send();
+                    Notify::done(
+                        'User approved',
+                        $this->record->name . ' is now active and can sign in.'
+                    );
                 })
                 ->visible(fn () => $this->record->isPending()),
 
@@ -252,9 +307,16 @@ class ViewUser extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->update(['status' => 'inactive', 'is_active' => false]);
-                    Notification::make()->danger()->title('User Rejected')->send();
+                    // warning(), not danger(): the rejection was requested and
+                    // carried out correctly, so this is an expected outcome rather
+                    // than a system failure.
+                    Notify::declined(
+                        'User rejected',
+                        'The request from ' . $this->record->name . ' was declined. The account stays inactive until approved.'
+                    );
                 })
                 ->visible(fn () => $this->record->isPending()),
         ];
     }
 }
+

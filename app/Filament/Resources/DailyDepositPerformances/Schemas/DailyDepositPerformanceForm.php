@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\DailyDepositPerformances\Schemas;
 
+use App\Filament\Support\BusinessDay;
 use App\Models\Branch;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -20,11 +20,7 @@ class DailyDepositPerformanceForm
         return $schema
             ->components([
 
-                DatePicker::make('business_day')
-                    ->label('Business Day')
-                    ->native(false)
-                    ->default(now()->subDay())
-                    ->required(),
+                BusinessDay::picker(),
 
                 Repeater::make('branches')
                     ->label('Daily Deposit Performance')
