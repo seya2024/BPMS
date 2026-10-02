@@ -2,7 +2,7 @@
  
  <style>
 /* =========================================
-PURE CSS DASHBOARD LAYOUT
+PURE CSS DASHBOARD LAYOUT (Responsive + Tabs)
 ========================================= */
 
     .pure-dash-container {
@@ -61,10 +61,11 @@ PURE CSS DASHBOARD LAYOUT
         color: #374151;
     }
 
-    /* Filter Bar */
+    /* Filter Bar - Responsive */
     .pure-filter-bar {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         align-items: center;
         gap: 16px;
         background: white;
@@ -73,13 +74,12 @@ PURE CSS DASHBOARD LAYOUT
         border: 1px solid #e5e7eb;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         width: 100%;
-        overflow-x: auto;
     }
 
     .pure-filter-bar .fi-fo {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-wrap: wrap !important;
         gap: 12px !important;
         align-items: flex-end !important;
         width: 100% !important;
@@ -87,9 +87,8 @@ PURE CSS DASHBOARD LAYOUT
     }
 
     .pure-filter-bar .fi-fo > div {
-        flex: 1 1 0% !important;
+        flex: 1 1 200px !important;
         min-width: 150px !important;
-        width: auto !important;
     }
 
     .pure-filter-bar .fi-fo-grid {
@@ -116,6 +115,15 @@ PURE CSS DASHBOARD LAYOUT
         display: flex;
         gap: 8px;
         flex-shrink: 0;
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+    @media (min-width: 1024px) {
+        .pure-action-buttons {
+            width: auto;
+            margin-top: 0;
+        }
     }
 
     .pure-btn {
@@ -156,24 +164,12 @@ PURE CSS DASHBOARD LAYOUT
         height: 16px !important;
     }
 
-    /* KPI Grid */
+    /* KPI Grid - Responsive */
     .pure-kpi-grid {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px;
         width: 100%;
-    }
-
-    @media (max-width: 1280px) {
-        .pure-kpi-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-    }
-
-    @media (max-width: 768px) {
-        .pure-kpi-grid {
-            grid-template-columns: 1fr;
-        }
     }
 
     .pure-kpi-card {
@@ -201,30 +197,11 @@ PURE CSS DASHBOARD LAYOUT
         height: 24px !important;
     }
 
-    .pure-kpi-icon.blue {
-        background-color: #eff6ff;
-        color: #2563eb;
-    }
-
-    .pure-kpi-icon.green {
-        background-color: #f0fdf4;
-        color: #16a34a;
-    }
-
-    .pure-kpi-icon.amber {
-        background-color: #fffbeb;
-        color: #d97706;
-    }
-
-    .pure-kpi-icon.red {
-        background-color: #fef2f2;
-        color: #dc2626;
-    }
-
-    .pure-kpi-icon.indigo {
-        background-color: #eef2ff;
-        color: #4f46e5;
-    }
+    .pure-kpi-icon.blue { background-color: #eff6ff; color: #2563eb; }
+    .pure-kpi-icon.green { background-color: #f0fdf4; color: #16a34a; }
+    .pure-kpi-icon.amber { background-color: #fffbeb; color: #d97706; }
+    .pure-kpi-icon.red { background-color: #fef2f2; color: #dc2626; }
+    .pure-kpi-icon.indigo { background-color: #eef2ff; color: #4f46e5; }
 
     .pure-kpi-title {
         font-size: 11px;
@@ -250,15 +227,8 @@ PURE CSS DASHBOARD LAYOUT
         border-radius: 4px;
     }
 
-    .pure-kpi-badge.green {
-        background-color: #fffbeb;
-        color: #d97706;
-    }
-
-    .pure-kpi-badge.red {
-        background-color: #fef2f2;
-        color: #dc2626;
-    }
+    .pure-kpi-badge.green { background-color: #fffbeb; color: #d97706; }
+    .pure-kpi-badge.red { background-color: #fef2f2; color: #dc2626; }
 
     /* Attention Widget */
     .pure-attention-widget {
@@ -312,6 +282,19 @@ PURE CSS DASHBOARD LAYOUT
         font-weight: 500;
     }
 
+    /* Responsive Top Section Grid */
+    .pure-top-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        width: 100%;
+    }
+    @media (min-width: 1024px) {
+        .pure-top-section {
+            grid-template-columns: 3fr 1fr;
+        }
+    }
+
     /* Main Data Table */
     .pure-table-wrapper {
         background: white;
@@ -351,52 +334,25 @@ PURE CSS DASHBOARD LAYOUT
         border-right: none;
     }
 
-    /* Header Colors */
+    /* Header Colors - LIKE FOOTER */
     .pure-th-main {
-        background-color: #f9fafb;
-        color: #4b5563;
+        background-color: #1e3a8a !important;
+        color: #ffffff !important;
         font-weight: 700;
         font-size: 10px;
         text-transform: uppercase;
         padding: 8px 6px;
+        border-bottom: 1px solid #3b5998;
     }
 
     .pure-th-sub {
-        background-color: #f3f4f6;
-        color: #6b7280;
+        background-color: #2a4d8a !important;
+        color: #e5e7eb !important;
         font-weight: 600;
         font-size: 9px;
         padding: 4px 6px;
-    }
-
-    .pure-th-deposit {
-        background-color: #f0f7ff !important;
-        color: #1e3a8a !important;
-    }
-
-    .pure-th-accounts {
-        background-color: #f0fdf4 !important;
-        color: #166534 !important;
-    }
-
-    .pure-th-mobile {
-        background-color: #faf5ff !important;
-        color: #6b21a8 !important;
-    }
-
-    .pure-th-foreign {
-        background-color: #ecfdf5 !important;
-        color: #047857 !important;
-    }
-
-    .pure-th-loans {
-        background-color: #fff1f2 !important;
-        color: #9f1239 !important;
-    }
-
-    .pure-th-overall {
-        background-color: #f3f4f6 !important;
-        color: #374151 !important;
+        border-bottom: 1px solid #3b5998;
+        text-transform: uppercase;
     }
 
     /* Rows */
@@ -441,32 +397,11 @@ PURE CSS DASHBOARD LAYOUT
     }
 
     /* Text Utilities */
-    .pure-text-red {
-        color: #dc2626 !important;
-    }
-
-    .pure-text-green {
-        color: #16a34a !important;
-    }
-
-    .pure-text-amber {
-        color: #d97706 !important;
-    }
-
-    .pure-text-muted {
-        color: #9ca3af !important;
-    }
-
-    .pure-font-bold {
-        font-weight: 700;
-    }
-
-    /* Closing Baseline */
-    .pure-closing-value {
-        color: #16a34a !important;
-        font-weight: 700;
-        background-color: #f0fdf4;
-    }
+    .pure-text-red { color: #dc2626 !important; }
+    .pure-text-green { color: #16a34a !important; }
+    .pure-text-amber { color: #d97706 !important; }
+    .pure-text-muted { color: #9ca3af !important; }
+    .pure-font-bold { font-weight: 700; }
 
     /* Sticky Columns */
     .pure-sticky-col {
@@ -477,28 +412,11 @@ PURE CSS DASHBOARD LAYOUT
         padding-left: 12px !important;
     }
 
-    .pure-row-district .pure-sticky-col {
-        background-color: #f8fafc;
-    }
-
-    .pure-row-branch .pure-sticky-col {
-        background-color: #ffffff;
-    }
-
-    .pure-row-grand-total .pure-sticky-col {
-        background-color: #1e3a8a;
-        color: #ffffff;
-    }
-
-    .pure-th-main.pure-sticky-col {
-        background-color: #f9fafb;
-        z-index: 20;
-    }
-
-    .pure-th-sub.pure-sticky-col {
-        background-color: #f3f4f6;
-        z-index: 20;
-    }
+    .pure-row-district .pure-sticky-col { background-color: #f8fafc; }
+    .pure-row-branch .pure-sticky-col { background-color: #ffffff; }
+    .pure-row-grand-total .pure-sticky-col { background-color: #1e3a8a; color: #ffffff; }
+    .pure-th-main.pure-sticky-col { background-color: #1e3a8a !important; z-index: 20; }
+    .pure-th-sub.pure-sticky-col { background-color: #2a4d8a !important; z-index: 20; }
 
     /* Table Legend */
     .pure-table-legend {
@@ -522,25 +440,62 @@ PURE CSS DASHBOARD LAYOUT
         margin-right: 4px;
     }
 
-    .pure-legend-dot.green {
-        background-color: #22c55e;
-    }
-
-    .pure-legend-dot.amber {
-        background-color: #f59e0b;
-    }
-
-    .pure-legend-dot.red {
-        background-color: #ef4444;
-    }
+    .pure-legend-dot.green { background-color: #22c55e; }
+    .pure-legend-dot.amber { background-color: #f59e0b; }
+    .pure-legend-dot.red { background-color: #ef4444; }
 
     .pure-table-legend svg {
         width: 14px !important;
         height: 14px !important;
     }
+
+    /* =========================================
+       KPI TABS STYLING
+       ========================================= */
+    .kpi-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .kpi-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        background: #f3f4f6;
+        color: #4b5563;
+        transition: all 0.2s;
+        outline: none;
+    }
+    
+    .kpi-tab:hover {
+        background: #e5e7eb;
+    }
+    
+    .kpi-tab.active {
+        background: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .kpi-tab svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
 </style>
 
-<div class="pure-dash-container">
+<!-- Alpine.js Data Scope for Tabs -->
+<div class="pure-dash-container" x-data="{ activeTab: 'major' }">
 
     <!-- Filters -->
     <div class="pure-filter-bar">
@@ -562,7 +517,7 @@ PURE CSS DASHBOARD LAYOUT
     </div>
 
     <!-- KPI Cards and Attention Widget -->
-    <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 16px; width: 100%;">
+    <div class="pure-top-section">
 
         <div class="pure-kpi-grid">
 
@@ -570,7 +525,6 @@ PURE CSS DASHBOARD LAYOUT
                 <div class="pure-kpi-icon blue">
                     <x-heroicon-o-building-office-2 />
                 </div>
-
                 <div>
                     <p class="pure-kpi-title">Total Branches</p>
                     <p class="pure-kpi-value">1,024</p>
@@ -581,10 +535,8 @@ PURE CSS DASHBOARD LAYOUT
                 <div class="pure-kpi-icon green">
                     <x-heroicon-o-check-circle />
                 </div>
-
                 <div>
                     <p class="pure-kpi-title">On Target</p>
-
                     <div style="display: flex; align-items: baseline; gap: 8px;">
                         <p class="pure-kpi-value">687</p>
                         <span class="pure-kpi-badge green">67.1%</span>
@@ -596,10 +548,8 @@ PURE CSS DASHBOARD LAYOUT
                 <div class="pure-kpi-icon amber">
                     <x-heroicon-o-exclamation-circle />
                 </div>
-
                 <div>
                     <p class="pure-kpi-title">Near Target</p>
-
                     <div style="display: flex; align-items: baseline; gap: 8px;">
                         <p class="pure-kpi-value">126</p>
                         <span class="pure-kpi-badge amber">12.3%</span>
@@ -611,10 +561,8 @@ PURE CSS DASHBOARD LAYOUT
                 <div class="pure-kpi-icon red">
                     <x-heroicon-o-exclamation-triangle />
                 </div>
-
                 <div>
                     <p class="pure-kpi-title">Attention Required</p>
-
                     <div style="display: flex; align-items: baseline; gap: 8px;">
                         <p class="pure-kpi-value">211</p>
                         <span class="pure-kpi-badge red">20.6%</span>
@@ -626,18 +574,12 @@ PURE CSS DASHBOARD LAYOUT
                 <div class="pure-kpi-icon indigo">
                     <x-heroicon-o-chart-bar />
                 </div>
-
                 <div>
                     <p class="pure-kpi-title">Avg Achievement</p>
-
                     <div style="display: flex; align-items: baseline; gap: 8px;">
                         <p class="pure-kpi-value">94.6%</p>
-
                         <span style="font-size: 10px; color: #16a34a; font-weight: 500; display: flex; align-items: center; gap: 2px;">
-                            <x-heroicon-s-arrow-trending-up
-                                style="width: 12px; height: 12px;"
-                            />
-                            2.8%
+                            <x-heroicon-s-arrow-trending-up style="width: 12px; height: 12px;" /> 2.8%
                         </span>
                     </div>
                 </div>
@@ -647,17 +589,11 @@ PURE CSS DASHBOARD LAYOUT
 
         <!-- Attention Branches -->
         <div class="pure-attention-widget">
-
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <h3 class="pure-attention-title" style="margin: 0;">
-                    <x-heroicon-s-exclamation-triangle />
-                    Top Attention Branches
+                    <x-heroicon-s-exclamation-triangle /> Top Attention Branches
                 </h3>
-
-                <a href="#"
-                   style="font-size: 10px; color: #2563eb; text-decoration: none; font-weight: 500;">
-                    View All
-                </a>
+                <a href="#" style="font-size: 10px; color: #2563eb; text-decoration: none; font-weight: 500;">View All</a>
             </div>
 
             <table class="pure-attention-table">
@@ -668,949 +604,416 @@ PURE CSS DASHBOARD LAYOUT
                         <th>Issues</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    <tr>
-                        <td>Agaro</td>
-                        <td>Jimma</td>
-                        <td>4 KPIs below target</td>
-                    </tr>
-
-                    <tr>
-                        <td>Bahir Dar</td>
-                        <td>Bahir Dar</td>
-                        <td>3 KPIs below target</td>
-                    </tr>
-
-                    <tr>
-                        <td>Hawassa</td>
-                        <td>SNNP</td>
-                        <td>2 KPIs below target</td>
-                    </tr>
+                    <tr><td>Agaro</td><td>Jimma</td><td>4 KPIs below target</td></tr>
+                    <tr><td>Bahir Dar</td><td>Bahir Dar</td><td>3 KPIs below target</td></tr>
+                    <tr><td>Hawassa</td><td>SNNP</td><td>2 KPIs below target</td></tr>
                 </tbody>
             </table>
-
         </div>
     </div>
 
-    <!-- Main Data Table -->
-    <div class="pure-table-wrapper">
+    <!-- =========================================
+         KPI TABS NAVIGATION
+         ========================================= -->
+    <div class="kpi-tabs">
+        <button @click="activeTab = 'major'" :class="{'active': activeTab === 'major'}" class="kpi-tab">
+            <x-heroicon-o-presentation-chart-bar />
+            Major KPIs
+        </button>
+        <button @click="activeTab = 'digital'" :class="{'active': activeTab === 'digital'}" class="kpi-tab">
+            <x-heroicon-o-device-phone-mobile />
+            Digital KPIs
+        </button>
+        <button @click="activeTab = 'activation'" :class="{'active': activeTab === 'activation'}" class="kpi-tab">
+            <x-heroicon-o-bolt />
+            Activation KPIs
+        </button>
+        <button @click="activeTab = 'other'" :class="{'active': activeTab === 'other'}" class="kpi-tab">
+            <x-heroicon-o-squares-plus />
+            Other KPIs
+        </button>
+    </div>
 
+    @php
+    // Mock Data Array for all branches
+    $data = [
+        ['id'=>'', 'district'=>'JIMMA DISTRICT', 'branch'=>'', 'type'=>'IFB', 'is_district'=>true,
+         'major'=>['deposit'=>['a'=>'299M','t'=>'310M','v'=>'-11M','g'=>96,'tr'=>'↑'], 'accounts'=>['a'=>52,'t'=>52,'v'=>0,'g'=>100,'tr'=>'↑'], 'fcy'=>['a'=>'50K','t'=>'60K','v'=>'-10K','g'=>83,'tr'=>'↓'], 'loans'=>['a'=>'180M','t'=>'200M','v'=>'-20M','g'=>90,'tr'=>'↓']],
+         'digital'=>['card_sub'=>['a'=>120,'t'=>150,'v'=>-30,'g'=>80,'tr'=>'↓'], 'pos_sub'=>['a'=>20,'t'=>30,'v'=>-10,'g'=>67,'tr'=>'↓'], 'super_sub'=>['a'=>45,'t'=>60,'v'=>-15,'g'=>75,'tr'=>'↓']],
+         'activation'=>['acc_act'=>['a'=>39,'t'=>50,'v'=>-11,'g'=>78,'tr'=>'↓'], 'card_act'=>['a'=>100,'t'=>130,'v'=>-30,'g'=>77,'tr'=>'↓'], 'super_act'=>['a'=>40,'t'=>50,'v'=>-10,'g'=>80,'tr'=>'↓']],
+         'other'=>['service_quality'=>['a'=>'88','t'=>'90','v'=>'-2','g'=>98,'tr'=>'↑'], 'atm_txn'=>['a'=>'3,200','t'=>'3,500','v'=>'-300','g'=>91,'tr'=>'↓'], 'pos_txn'=>['a'=>'1,800','t'=>'2,000','v'=>'-200','g'=>90,'tr'=>'→'], 'nps'=>['a'=>'45','t'=>'50','v'=>'-5','g'=>90,'tr'=>'↓']],
+         'overall'=>['score'=>94.2,'trend'=>'down']],
+         
+        ['id'=>'1.', 'district'=>'Jimma Main', 'branch'=>'', 'type'=>'Conventional', 'is_district'=>false,
+         'major'=>['deposit'=>['a'=>'125M','t'=>'120M','v'=>'+5M','g'=>104,'tr'=>'↑'], 'accounts'=>['a'=>24,'t'=>20,'v'=>'+4','g'=>120,'tr'=>'↑'], 'fcy'=>['a'=>'25K','t'=>'20K','v'=>'+5K','g'=>125,'tr'=>'↑'], 'loans'=>['a'=>'95M','t'=>'100M','v'=>'-5M','g'=>95,'tr'=>'↑']],
+         'digital'=>['card_sub'=>['a'=>50,'t'=>60,'v'=>-10,'g'=>83,'tr'=>'↓'], 'pos_sub'=>['a'=>10,'t'=>12,'v'=>-2,'g'=>83,'tr'=>'↓'], 'super_sub'=>['a'=>20,'t'=>25,'v'=>-5,'g'=>80,'tr'=>'↓']],
+         'activation'=>['acc_act'=>['a'=>18,'t'=>25,'v'=>-7,'g'=>72,'tr'=>'↓'], 'card_act'=>['a'=>45,'t'=>55,'v'=>-10,'g'=>82,'tr'=>'↓'], 'super_act'=>['a'=>18,'t'=>22,'v'=>-4,'g'=>82,'tr'=>'↓']],
+         'other'=>['service_quality'=>['a'=>'92','t'=>'90','v'=>'+2','g'=>102,'tr'=>'↑'], 'atm_txn'=>['a'=>'1,500','t'=>'1,400','v'=>'+100','g'=>107,'tr'=>'↑'], 'pos_txn'=>['a'=>'800','t'=>'750','v'=>'+50','g'=>107,'tr'=>'↑'], 'nps'=>['a'=>'55','t'=>'50','v'=>'+5','g'=>110,'tr'=>'↑']],
+         'overall'=>['score'=>97.8,'trend'=>'up']],
+         
+        ['id'=>'2.', 'district'=>'Agaro', 'branch'=>'', 'type'=>'Conventional', 'is_district'=>false,
+         'major'=>['deposit'=>['a'=>'98M','t'=>'110M','v'=>'-12M','g'=>89,'tr'=>'↓'], 'accounts'=>['a'=>17,'t'=>20,'v'=>'-3','g'=>85,'tr'=>'↓'], 'fcy'=>['a'=>'15K','t'=>'25K','v'=>'-10K','g'=>60,'tr'=>'↓'], 'loans'=>['a'=>'52M','t'=>'60M','v'=>'-8M','g'=>87,'tr'=>'↓']],
+         'digital'=>['card_sub'=>['a'=>40,'t'=>50,'v'=>-10,'g'=>80,'tr'=>'↓'], 'pos_sub'=>['a'=>5,'t'=>10,'v'=>-5,'g'=>50,'tr'=>'↓'], 'super_sub'=>['a'=>15,'t'=>20,'v'=>-5,'g'=>75,'tr'=>'↓']],
+         'activation'=>['acc_act'=>['a'=>12,'t'=>15,'v'=>-3,'g'=>80,'tr'=>'↓'], 'card_act'=>['a'=>35,'t'=>45,'v'=>-10,'g'=>78,'tr'=>'↓'], 'super_act'=>['a'=>12,'t'=>18,'v'=>-6,'g'=>67,'tr'=>'↓']],
+         'other'=>['service_quality'=>['a'=>'75','t'=>'90','v'=>'-15','g'=>83,'tr'=>'↓'], 'atm_txn'=>['a'=>'900','t'=>'1,200','v'=>'-300','g'=>75,'tr'=>'↓'], 'pos_txn'=>['a'=>'500','t'=>'800','v'=>'-300','g'=>63,'tr'=>'↓'], 'nps'=>['a'=>'30','t'=>'50','v'=>'-20','g'=>60,'tr'=>'↓']],
+         'overall'=>['score'=>87.2,'trend'=>'down']],
+         
+        ['id'=>'3.', 'district'=>'Bedele', 'branch'=>'', 'type'=>'IFB', 'is_district'=>false,
+         'major'=>['deposit'=>['a'=>'76M','t'=>'80M','v'=>'-4M','g'=>95,'tr'=>'→'], 'accounts'=>['a'=>11,'t'=>12,'v'=>'-1','g'=>92,'tr'=>'→'], 'fcy'=>['a'=>'10K','t'=>'15K','v'=>'-5K','g'=>67,'tr'=>'→'], 'loans'=>['a'=>'33M','t'=>'40M','v'=>'-7M','g'=>83,'tr'=>'↓']],
+         'digital'=>['card_sub'=>['a'=>30,'t'=>40,'v'=>-10,'g'=>75,'tr'=>'↓'], 'pos_sub'=>['a'=>5,'t'=>8,'v'=>-3,'g'=>63,'tr'=>'→'], 'super_sub'=>['a'=>10,'t'=>15,'v'=>-5,'g'=>67,'tr'=>'↓']],
+         'activation'=>['acc_act'=>['a'=>9,'t'=>10,'v'=>-1,'g'=>90,'tr'=>'→'], 'card_act'=>['a'=>20,'t'=>30,'v'=>-10,'g'=>67,'tr'=>'↓'], 'super_act'=>['a'=>10,'t'=>10,'v'=>0,'g'=>100,'tr'=>'→']],
+         'other'=>['service_quality'=>['a'=>'85','t'=>'90','v'=>'-5','g'=>94,'tr'=>'→'], 'atm_txn'=>['a'=>'800','t'=>'900','v'=>'-100','g'=>89,'tr'=>'→'], 'pos_txn'=>['a'=>'500','t'=>'600','v'=>'-100','g'=>83,'tr'=>'→'], 'nps'=>['a'=>'40','t'=>'50','v'=>'-10','g'=>80,'tr'=>'→']],
+         'overall'=>['score'=>91.4,'trend'=>'stable']],
+         
+        ['id'=>'4.', 'district'=>'DISTRICT TOTAL', 'branch'=>'', 'type'=>'IFB', 'is_district'=>true,
+         'major'=>['deposit'=>['a'=>'299M','t'=>'310M','v'=>'-11M','g'=>96,'tr'=>'→'], 'accounts'=>['a'=>52,'t'=>52,'v'=>0,'g'=>100,'tr'=>'↑'], 'fcy'=>['a'=>'50K','t'=>'60K','v'=>'-10K','g'=>83,'tr'=>'↓'], 'loans'=>['a'=>'180M','t'=>'200M','v'=>'-20M','g'=>90,'tr'=>'↓']],
+         'digital'=>['card_sub'=>['a'=>120,'t'=>150,'v'=>-30,'g'=>80,'tr'=>'↓'], 'pos_sub'=>['a'=>20,'t'=>30,'v'=>-10,'g'=>67,'tr'=>'↓'], 'super_sub'=>['a'=>45,'t'=>60,'v'=>-15,'g'=>75,'tr'=>'↓']],
+         'activation'=>['acc_act'=>['a'=>39,'t'=>50,'v'=>-11,'g'=>78,'tr'=>'↓'], 'card_act'=>['a'=>100,'t'=>130,'v'=>-30,'g'=>77,'tr'=>'↓'], 'super_act'=>['a'=>40,'t'=>50,'v'=>-10,'g'=>80,'tr'=>'↓']],
+         'other'=>['service_quality'=>['a'=>'88','t'=>'90','v'=>'-2','g'=>98,'tr'=>'↑'], 'atm_txn'=>['a'=>'3,200','t'=>'3,500','v'=>'-300','g'=>91,'tr'=>'↓'], 'pos_txn'=>['a'=>'1,800','t'=>'2,000','v'=>'-200','g'=>90,'tr'=>'→'], 'nps'=>['a'=>'45','t'=>'50','v'=>'-5','g'=>90,'tr'=>'↓']],
+         'overall'=>['score'=>94.2,'trend'=>'down']],
+    ];
+    @endphp
+
+    <!-- =========================================
+         MAIN DATA TABLE (Major KPIs)
+         ========================================= -->
+    <div class="pure-table-wrapper" x-show="activeTab === 'major'">
         <div class="pure-table-scroll">
-
             <table class="pure-table">
-
                 <thead>
                     <tr>
-                        <th class="pure-th-main pure-sticky-col"
-                            style="width: 40px;">
-                            #
-                        </th>
-
-                        <th class="pure-th-main pure-sticky-col"
-                            style="left: 40px; width: 80px;">
-                            District
-                        </th>
-
-                        <th class="pure-th-main pure-sticky-col"
-                            style="left: 120px; width: 120px;">
-                            Jun 30 Closing
-                        </th>
-
-                        <th colspan="5" class="pure-th-main pure-th-deposit">
-                            DEPOSIT
-                        </th>
-
-                        <th colspan="5" class="pure-th-main pure-th-accounts">
-                            NEW ACCOUNTS
-                        </th>
-
-                        <th colspan="5" class="pure-th-main pure-th-mobile">
-                            MOBILE ACTIVATION
-                        </th>
-
-                        <th colspan="5" class="pure-th-main pure-th-foreign">
-                            FOREIGN CURRENCY
-                        </th>
-
-                        <th colspan="5" class="pure-th-main pure-th-loans">
-                            LOANS
-                        </th>
-
-                        <th colspan="2" class="pure-th-main pure-th-overall">
-                            Overall
-                        </th>
+                        <th class="pure-th-main pure-sticky-col" style="width: 40px;">#</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 40px; width: 80px;">District</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 120px; width: 140px;">Banking Type</th>
+                        
+                        <th colspan="5" class="pure-th-main">DEPOSIT</th>
+                        <th colspan="5" class="pure-th-main">NEW ACCOUNTS</th>
+                        <th colspan="5" class="pure-th-main">FCY</th>
+                        <th colspan="5" class="pure-th-main">LOANS</th>
+                        <th colspan="2" class="pure-th-main">Overall</th>
                     </tr>
-
                     <tr>
-                        <th class="pure-th-sub pure-sticky-col"
-                            style="left: 0; width: 40px;">
-                        </th>
-
-                        <th class="pure-th-sub pure-sticky-col"
-                            style="left: 40px; width: 80px;">
-                        </th>
-
-                        <th class="pure-th-sub pure-sticky-col"
-                            style="left: 120px; width: 120px;">
-                        </th>
-
-                        @for ($i = 0; $i < 5; $i++)
-                            <th class="pure-th-sub">A</th>
-                            <th class="pure-th-sub">T</th>
-                            <th class="pure-th-sub">V</th>
-                            <th class="pure-th-sub">G%</th>
-                            <th class="pure-th-sub">Tr</th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 0; width: 40px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 40px; width: 80px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 120px; width: 140px;"></th>
+                        @for ($i = 0; $i < 4; $i++)
+                            <th class="pure-th-sub">Actual</th><th class="pure-th-sub">Target</th><th class="pure-th-sub">Variance</th><th class="pure-th-sub">Achievement</th><th class="pure-th-sub">Trend</th>
                         @endfor
-
                         <th class="pure-th-sub">Score</th>
                         <th class="pure-th-sub">Trend</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
-                    <!-- =========================
-                         JIMMA DISTRICT
-                         ========================= -->
-
-                    <tr class="pure-row-district">
-                        <td class="pure-sticky-col" style="width: 40px;">
-                            <x-heroicon-s-chevron-down
-                                style="width: 12px; height: 12px; color: #9ca3af;"
-                            />
-                        </td>
-
-                        <td class="pure-sticky-col pure-font-bold"
-                            style="left: 40px;">
-                            JIMMA DISTRICT
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>299M</td>
-                        <td>310M</td>
-                        <td class="pure-text-red">-11M</td>
-                        <td>96%</td>
-                        <td>↑</td>
-
-                        <td>52</td>
-                        <td>52</td>
-                        <td>0</td>
-                        <td>100%</td>
-                        <td>↑</td>
-
-                        <td>39</td>
-                        <td>50</td>
-                        <td class="pure-text-red">-11</td>
-                        <td>78%</td>
-                        <td>↓</td>
-
-                        <td>285K</td>
-                        <td>300K</td>
-                        <td class="pure-text-red">-15K</td>
-                        <td>95%</td>
-                        <td>↑</td>
-
-                        <td>180M</td>
-                        <td>200M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>90%</td>
-                        <td>↓</td>
-
-                        <td>94.2%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- Jimma Main -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">1.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Jimma Main
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>125M</td>
-                        <td>120M</td>
-                        <td class="pure-text-green">+5M</td>
-                        <td>104%</td>
-                        <td>↑</td>
-
-                        <td>24</td>
-                        <td>20</td>
-                        <td class="pure-text-green">+4</td>
-                        <td>120%</td>
-                        <td>↑</td>
-
-                        <td>18</td>
-                        <td>25</td>
-                        <td class="pure-text-red">-7</td>
-                        <td>72%</td>
-                        <td>↓</td>
-
-                        <td>118K</td>
-                        <td>120K</td>
-                        <td class="pure-text-red">-2K</td>
-                        <td>98%</td>
-                        <td>↑</td>
-
-                        <td>95M</td>
-                        <td>100M</td>
-                        <td class="pure-text-red">-5M</td>
-                        <td>95%</td>
-                        <td>↑</td>
-
-                        <td>97.8%</td>
-                        <td class="pure-text-green">▲</td>
-                    </tr>
-
-                    <!-- Agaro -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">2.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Agaro
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>98M</td>
-                        <td>110M</td>
-                        <td class="pure-text-red">-12M</td>
-                        <td>89%</td>
-                        <td>↓</td>
-
-                        <td>17</td>
-                        <td>20</td>
-                        <td class="pure-text-red">-3</td>
-                        <td>85%</td>
-                        <td>↓</td>
-
-                        <td>12</td>
-                        <td>15</td>
-                        <td class="pure-text-red">-3</td>
-                        <td>80%</td>
-                        <td>↓</td>
-
-                        <td>82K</td>
-                        <td>100K</td>
-                        <td class="pure-text-red">-18K</td>
-                        <td>82%</td>
-                        <td>↓</td>
-
-                        <td>52M</td>
-                        <td>60M</td>
-                        <td class="pure-text-red">-8M</td>
-                        <td>87%</td>
-                        <td>↓</td>
-
-                        <td>87.2%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- Bedele -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">3.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Bedele
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>76M</td>
-                        <td>80M</td>
-                        <td class="pure-text-red">-4M</td>
-                        <td>95%</td>
-                        <td>→</td>
-
-                        <td>11</td>
-                        <td>12</td>
-                        <td class="pure-text-red">-1</td>
-                        <td>92%</td>
-                        <td>→</td>
-
-                        <td>9</td>
-                        <td>10</td>
-                        <td class="pure-text-red">-1</td>
-                        <td>90%</td>
-                        <td>→</td>
-
-                        <td>74K</td>
-                        <td>80K</td>
-                        <td class="pure-text-red">-6K</td>
-                        <td>93%</td>
-                        <td>→</td>
-
-                        <td>33M</td>
-                        <td>40M</td>
-                        <td class="pure-text-red">-7M</td>
-                        <td>83%</td>
-                        <td>↓</td>
-
-                        <td>91.4%</td>
-                        <td class="pure-text-amber">→</td>
-                    </tr>
-
-                    <!-- Jimma District Total -->
-                    <tr class="pure-row-district">
-                        <td class="pure-sticky-col" style="width: 40px;">4.</td>
-
-                        <td class="pure-sticky-col pure-font-bold"
-                            style="left: 40px;">
-                            DISTRICT TOTAL
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>299M</td>
-                        <td>310M</td>
-                        <td class="pure-text-red">-11M</td>
-                        <td>96%</td>
-                        <td>→</td>
-
-                        <td>52</td>
-                        <td>52</td>
-                        <td>0</td>
-                        <td>100%</td>
-                        <td>↑</td>
-
-                        <td>39</td>
-                        <td>50</td>
-                        <td class="pure-text-red">-11</td>
-                        <td>78%</td>
-                        <td>↓</td>
-
-                        <td>285K</td>
-                        <td>300K</td>
-                        <td class="pure-text-red">-15K</td>
-                        <td>95%</td>
-                        <td>↑</td>
-
-                        <td>180M</td>
-                        <td>200M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>90%</td>
-                        <td>↓</td>
-
-                        <td>94.2%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- =========================
-                         BAHIR DAR DISTRICT
-                         ========================= -->
-
-                    <tr class="pure-row-district">
-                        <td class="pure-sticky-col" style="width: 40px;">
-                            <x-heroicon-s-chevron-down
-                                style="width: 12px; height: 12px; color: #9ca3af;"
-                            />
-                        </td>
-
-                        <td class="pure-sticky-col pure-font-bold"
-                            style="left: 40px;">
-                            BAHIR DAR DISTRICT
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>410M</td>
-                        <td>420M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>98%</td>
-                        <td>↓</td>
-
-                        <td>76</td>
-                        <td>80</td>
-                        <td class="pure-text-red">-4</td>
-                        <td>95%</td>
-                        <td>→</td>
-
-                        <td>62</td>
-                        <td>70</td>
-                        <td class="pure-text-red">-8</td>
-                        <td>89%</td>
-                        <td>↓</td>
-
-                        <td>365K</td>
-                        <td>390K</td>
-                        <td class="pure-text-red">-25K</td>
-                        <td>94%</td>
-                        <td>↑</td>
-
-                        <td>250M</td>
-                        <td>270M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>93%</td>
-                        <td>↓</td>
-
-                        <td>93.6%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- Bahir Dar 1 -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">5.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Bahir Dar 1
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>160M</td>
-                        <td>170M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>94%</td>
-                        <td>↓</td>
-
-                        <td>30</td>
-                        <td>34</td>
-                        <td class="pure-text-red">-4</td>
-                        <td>88%</td>
-                        <td>↓</td>
-
-                        <td>25</td>
-                        <td>30</td>
-                        <td class="pure-text-red">-5</td>
-                        <td>83%</td>
-                        <td>↓</td>
-
-                        <td>155K</td>
-                        <td>170K</td>
-                        <td class="pure-text-red">-15K</td>
-                        <td>91%</td>
-                        <td>↓</td>
-
-                        <td>100M</td>
-                        <td>110M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>91%</td>
-                        <td>↓</td>
-
-                        <td>90.2%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- Bahir Dar 2 -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">6.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Bahir Dar 2
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>140M</td>
-                        <td>135M</td>
-                        <td class="pure-text-green">+5M</td>
-                        <td>104%</td>
-                        <td>↑</td>
-
-                        <td>26</td>
-                        <td>28</td>
-                        <td class="pure-text-red">-2</td>
-                        <td>93%</td>
-                        <td>→</td>
-
-                        <td>22</td>
-                        <td>26</td>
-                        <td class="pure-text-red">-4</td>
-                        <td>85%</td>
-                        <td>↓</td>
-
-                        <td>128K</td>
-                        <td>125K</td>
-                        <td class="pure-text-green">+3K</td>
-                        <td>102%</td>
-                        <td>↑</td>
-
-                        <td>90M</td>
-                        <td>95M</td>
-                        <td class="pure-text-red">-5M</td>
-                        <td>95%</td>
-                        <td>↑</td>
-
-                        <td>94.8%</td>
-                        <td class="pure-text-green">▲</td>
-                    </tr>
-
-                    <!-- Bahir Dar 3 -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">7.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Bahir Dar 3
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>110M</td>
-                        <td>115M</td>
-                        <td class="pure-text-red">-5M</td>
-                        <td>96%</td>
-                        <td>→</td>
-
-                        <td>20</td>
-                        <td>18</td>
-                        <td class="pure-text-green">+2</td>
-                        <td>111%</td>
-                        <td>↑</td>
-
-                        <td>15</td>
-                        <td>14</td>
-                        <td class="pure-text-green">+1</td>
-                        <td>107%</td>
-                        <td>↑</td>
-
-                        <td>82K</td>
-                        <td>80K</td>
-                        <td class="pure-text-green">+2K</td>
-                        <td>103%</td>
-                        <td>↑</td>
-
-                        <td>60M</td>
-                        <td>65M</td>
-                        <td class="pure-text-red">-5M</td>
-                        <td>92%</td>
-                        <td>↓</td>
-
-                        <td>96.7%</td>
-                        <td class="pure-text-green">▲</td>
-                    </tr>
-
-                    <!-- Bahir Dar District Total -->
-                    <tr class="pure-row-district">
-                        <td class="pure-sticky-col" style="width: 40px;">8.</td>
-
-                        <td class="pure-sticky-col pure-font-bold"
-                            style="left: 40px;">
-                            DISTRICT TOTAL
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>410M</td>
-                        <td>420M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>98%</td>
-                        <td>↓</td>
-
-                        <td>76</td>
-                        <td>80</td>
-                        <td class="pure-text-red">-4</td>
-                        <td>95%</td>
-                        <td>→</td>
-
-                        <td>62</td>
-                        <td>70</td>
-                        <td class="pure-text-red">-8</td>
-                        <td>89%</td>
-                        <td>↓</td>
-
-                        <td>365K</td>
-                        <td>390K</td>
-                        <td class="pure-text-red">-25K</td>
-                        <td>94%</td>
-                        <td>↑</td>
-
-                        <td>250M</td>
-                        <td>270M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>93%</td>
-                        <td>↓</td>
-
-                        <td>93.6%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- =========================
-                         SNNP DISTRICT
-                         ========================= -->
-
-                    <tr class="pure-row-district">
-                        <td class="pure-sticky-col" style="width: 40px;">
-                            <x-heroicon-s-chevron-down
-                                style="width: 12px; height: 12px; color: #9ca3af;"
-                            />
-                        </td>
-
-                        <td class="pure-sticky-col pure-font-bold"
-                            style="left: 40px;">
-                            SNNP DISTRICT
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>320M</td>
-                        <td>340M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>94%</td>
-                        <td>↓</td>
-
-                        <td>58</td>
-                        <td>60</td>
-                        <td class="pure-text-red">-2</td>
-                        <td>97%</td>
-                        <td>↓</td>
-
-                        <td>48</td>
-                        <td>55</td>
-                        <td class="pure-text-red">-7</td>
-                        <td>87%</td>
-                        <td>↓</td>
-
-                        <td>210K</td>
-                        <td>230K</td>
-                        <td class="pure-text-red">-20K</td>
-                        <td>91%</td>
-                        <td>↓</td>
-
-                        <td>160M</td>
-                        <td>180M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>89%</td>
-                        <td>↓</td>
-
-                        <td>91.8%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- Hawassa -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">9.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Hawassa
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>130M</td>
-                        <td>140M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>93%</td>
-                        <td>↓</td>
-
-                        <td>24</td>
-                        <td>26</td>
-                        <td class="pure-text-red">-2</td>
-                        <td>92%</td>
-                        <td>↓</td>
-
-                        <td>20</td>
-                        <td>25</td>
-                        <td class="pure-text-red">-5</td>
-                        <td>80%</td>
-                        <td>↓</td>
-
-                        <td>95K</td>
-                        <td>110K</td>
-                        <td class="pure-text-red">-15K</td>
-                        <td>86%</td>
-                        <td>↓</td>
-
-                        <td>85M</td>
-                        <td>95M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>89%</td>
-                        <td>↓</td>
-
-                        <td>89.5%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- Wolayta Sodo -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">10.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Wolayta Sodo
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>110M</td>
-                        <td>120M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>92%</td>
-                        <td>↓</td>
-
-                        <td>18</td>
-                        <td>20</td>
-                        <td class="pure-text-red">-2</td>
-                        <td>90%</td>
-                        <td>↓</td>
-
-                        <td>16</td>
-                        <td>20</td>
-                        <td class="pure-text-red">-4</td>
-                        <td>80%</td>
-                        <td>↓</td>
-
-                        <td>72K</td>
-                        <td>80K</td>
-                        <td class="pure-text-red">-8K</td>
-                        <td>90%</td>
-                        <td>↓</td>
-
-                        <td>50M</td>
-                        <td>60M</td>
-                        <td class="pure-text-red">-10M</td>
-                        <td>83%</td>
-                        <td>↓</td>
-
-                        <td>85.6%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
-                    <!-- Dilla -->
-                    <tr class="pure-row-branch">
-                        <td class="pure-sticky-col" style="width: 40px;">11.</td>
-
-                        <td class="pure-sticky-col" style="left: 40px;">
-                            Dilla
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>80M</td>
-                        <td>80M</td>
-                        <td>0</td>
-                        <td>100%</td>
-                        <td>↑</td>
-
-                        <td>16</td>
-                        <td>14</td>
-                        <td class="pure-text-green">+2</td>
-                        <td>114%</td>
-                        <td>↑</td>
-
-                        <td>12</td>
-                        <td>10</td>
-                        <td class="pure-text-green">+2</td>
-                        <td>120%</td>
-                        <td>↑</td>
-
-                        <td>43K</td>
-                        <td>40K</td>
-                        <td class="pure-text-green">+3K</td>
-                        <td>108%</td>
-                        <td>↑</td>
-
-                        <td>25M</td>
-                        <td>25M</td>
-                        <td>0</td>
-                        <td>100%</td>
-                        <td>↑</td>
-
-                        <td>98.4%</td>
-                        <td class="pure-text-green">▲</td>
-                    </tr>
-
-                    <!-- SNNP District Total -->
-                    <tr class="pure-row-district">
-                        <td class="pure-sticky-col" style="width: 40px;">12.</td>
-
-                        <td class="pure-sticky-col pure-font-bold"
-                            style="left: 40px;">
-                            DISTRICT TOTAL
-                        </td>
-
-                        <td class="pure-sticky-col pure-closing-value"
-                            style="left: 120px;">
-                            100%
-                        </td>
-
-                        <td>320M</td>
-                        <td>340M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>94%</td>
-                        <td>↓</td>
-
-                        <td>58</td>
-                        <td>60</td>
-                        <td class="pure-text-red">-2</td>
-                        <td>97%</td>
-                        <td>↓</td>
-
-                        <td>48</td>
-                        <td>55</td>
-                        <td class="pure-text-red">-7</td>
-                        <td>87%</td>
-                        <td>↓</td>
-
-                        <td>210K</td>
-                        <td>230K</td>
-                        <td class="pure-text-red">-20K</td>
-                        <td>91%</td>
-                        <td>↓</td>
-
-                        <td>160M</td>
-                        <td>180M</td>
-                        <td class="pure-text-red">-20M</td>
-                        <td>89%</td>
-                        <td>↓</td>
-
-                        <td>91.8%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-
+                    @foreach($data as $row)
+                        <tr class="{{ $row['is_district'] ? 'pure-row-district' : 'pure-row-branch' }}">
+                            <td class="pure-sticky-col" style="width: 40px;">
+                                @if($row['is_district'] && $row['id'] == '')
+                                    <x-heroicon-s-chevron-down style="width: 12px; height: 12px; color: #9ca3af;" />
+                                @else
+                                    {{ $row['id'] }}
+                                @endif
+                            </td>
+                            <td class="pure-sticky-col {{ $row['is_district'] ? 'pure-font-bold' : '' }}" style="left: 40px;">{{ $row['district'] }}</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">{{ $row['type'] }}</td>
+
+                            <!-- Major KPIs -->
+                            @foreach(['deposit', 'accounts', 'fcy', 'loans'] as $kpi)
+                                @php $k = $row['major'][$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td>
+                                <td>{{ $k['t'] }}</td>
+                                <td class="{{ strpos((string)$k['v'], '-') !== false ? 'pure-text-red' : (strpos((string)$k['v'], '+') !== false ? 'pure-text-green' : '') }}">{{ $k['v'] }}</td>
+                                <td>{{ $k['g'] }}%</td>
+                                <td class="{{ $k['tr'] === '↓' ? 'pure-text-red' : ($k['tr'] === '↑' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $k['tr'] }}</td>
+                            @endforeach
+
+                            <!-- Overall -->
+                            <td class="{{ $row['overall']['score'] < 90 ? 'pure-text-red' : ($row['overall']['score'] < 95 ? 'pure-text-amber' : 'pure-text-green') }}">{{ $row['overall']['score'] }}%</td>
+                            <td class="{{ $row['overall']['trend'] === 'down' ? 'pure-text-red' : ($row['overall']['trend'] === 'up' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $row['overall']['trend'] === 'up' ? '▲' : ($row['overall']['trend'] === 'down' ? '▼' : '→') }}</td>
+                        </tr>
+                    @endforeach
+
+                    <!-- Grand Total -->
+                    <tfoot class="pure-row-grand-total">
+                        <tr>
+                            <td class="pure-sticky-col" style="width: 40px;"></td>
+                            <td class="pure-sticky-col" style="left: 40px;">GRAND TOTAL</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">-</td>
+                            @php $gt = $data[0]['major']; @endphp
+                            @foreach(['deposit', 'accounts', 'fcy', 'loans'] as $kpi)
+                                @php $k = $gt[$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td><td>{{ $k['t'] }}</td><td class="pure-text-red">{{ $k['v'] }}</td><td>{{ $k['g'] }}%</td><td>↑</td>
+                            @endforeach
+                            <td>93.7%</td><td class="pure-text-red">▼</td>
+                        </tr>
+                    </tfoot>
                 </tbody>
-
-                <!-- Grand Total -->
-                <tfoot class="pure-row-grand-total">
-                    <tr>
-                        <td class="pure-sticky-col" style="width: 40px;"></td>
-
-                        <td class="pure-sticky-col"
-                            style="left: 40px;">
-                            GRAND TOTAL
-                        </td>
-
-                        <td class="pure-sticky-col"
-                            style="left: 120px;">
-                            <span style="color: #ffffff; font-weight: 700;">
-                                100%
-                            </span>
-                        </td>
-
-                        <td>1,029M</td>
-                        <td>1,070M</td>
-                        <td class="pure-text-red">-41M</td>
-                        <td>96%</td>
-                        <td>↑</td>
-
-                        <td>186</td>
-                        <td>192</td>
-                        <td class="pure-text-red">-6</td>
-                        <td>97%</td>
-                        <td>↑</td>
-
-                        <td>149</td>
-                        <td>175</td>
-                        <td class="pure-text-red">-26</td>
-                        <td>85%</td>
-                        <td>↓</td>
-
-                        <td>860K</td>
-                        <td>920K</td>
-                        <td class="pure-text-red">-60K</td>
-                        <td>93%</td>
-                        <td>↓</td>
-
-                        <td>590M</td>
-                        <td>650M</td>
-                        <td class="pure-text-red">-60M</td>
-                        <td>91%</td>
-                        <td>↓</td>
-
-                        <td>93.7%</td>
-                        <td class="pure-text-red">▼</td>
-                    </tr>
-                </tfoot>
-
             </table>
         </div>
+    </div>
 
-        <!-- Table Legend -->
-        <div class="pure-table-legend">
+    <!-- =========================================
+         MAIN DATA TABLE (Digital KPIs)
+         ========================================= -->
+    <div class="pure-table-wrapper" x-show="activeTab === 'digital'">
+        <div class="pure-table-scroll">
+            <table class="pure-table">
+                <thead>
+                    <tr>
+                        <th class="pure-th-main pure-sticky-col" style="width: 40px;">#</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 40px; width: 80px;">District</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 120px; width: 140px;">Banking Type</th>
+                        
+                        <th colspan="5" class="pure-th-main">CARD SUBSCRIPTION</th>
+                        <th colspan="5" class="pure-th-main">POS SUBSCRIPTION</th>
+                        <th colspan="5" class="pure-th-main">SUPER APP SUBSCRIPTION</th>
+                        <th colspan="2" class="pure-th-main">Overall</th>
+                    </tr>
+                    <tr>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 0; width: 40px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 40px; width: 80px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 120px; width: 140px;"></th>
+                        @for ($i = 0; $i < 3; $i++)
+                            <th class="pure-th-sub">Actual</th><th class="pure-th-sub">Target</th><th class="pure-th-sub">Variance</th><th class="pure-th-sub">Achievement</th><th class="pure-th-sub">Trend</th>
+                        @endfor
+                        <th class="pure-th-sub">Score</th>
+                        <th class="pure-th-sub">Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($data as $row)
+                        <tr class="{{ $row['is_district'] ? 'pure-row-district' : 'pure-row-branch' }}">
+                            <td class="pure-sticky-col" style="width: 40px;">
+                                @if($row['is_district'] && $row['id'] == '')
+                                    <x-heroicon-s-chevron-down style="width: 12px; height: 12px; color: #9ca3af;" />
+                                @else
+                                    {{ $row['id'] }}
+                                @endif
+                            </td>
+                            <td class="pure-sticky-col {{ $row['is_district'] ? 'pure-font-bold' : '' }}" style="left: 40px;">{{ $row['district'] }}</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">{{ $row['type'] }}</td>
 
-            <div style="display: flex; gap: 16px;">
-                <span style="display: flex; align-items: center;">
-                    <span class="pure-legend-dot green"></span>
-                    On Target (≥ 100%)
-                </span>
+                            <!-- Digital KPIs -->
+                            @foreach(['card_sub', 'pos_sub', 'super_sub'] as $kpi)
+                                @php $k = $row['digital'][$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td>
+                                <td>{{ $k['t'] }}</td>
+                                <td class="{{ strpos((string)$k['v'], '-') !== false ? 'pure-text-red' : (strpos((string)$k['v'], '+') !== false ? 'pure-text-green' : '') }}">{{ $k['v'] }}</td>
+                                <td>{{ $k['g'] }}%</td>
+                                <td class="{{ $k['tr'] === '↓' ? 'pure-text-red' : ($k['tr'] === '↑' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $k['tr'] }}</td>
+                            @endforeach
 
-                <span style="display: flex; align-items: center;">
-                    <span class="pure-legend-dot amber"></span>
-                    Near Target (90 to 99%)
-                </span>
+                            <!-- Overall -->
+                            <td class="{{ $row['overall']['score'] < 90 ? 'pure-text-red' : ($row['overall']['score'] < 95 ? 'pure-text-amber' : 'pure-text-green') }}">{{ $row['overall']['score'] }}%</td>
+                            <td class="{{ $row['overall']['trend'] === 'down' ? 'pure-text-red' : ($row['overall']['trend'] === 'up' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $row['overall']['trend'] === 'up' ? '▲' : ($row['overall']['trend'] === 'down' ? '▼' : '→') }}</td>
+                        </tr>
+                    @endforeach
 
-                <span style="display: flex; align-items: center;">
-                    <span class="pure-legend-dot red"></span>
-                    Below Target (&lt; 90%)
-                </span>
-            </div>
+                    <!-- Grand Total -->
+                    <tfoot class="pure-row-grand-total">
+                        <tr>
+                            <td class="pure-sticky-col" style="width: 40px;"></td>
+                            <td class="pure-sticky-col" style="left: 40px;">GRAND TOTAL</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">-</td>
+                            @php $gt = $data[0]['digital']; @endphp
+                            @foreach(['card_sub', 'pos_sub', 'super_sub'] as $kpi)
+                                @php $k = $gt[$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td><td>{{ $k['t'] }}</td><td class="pure-text-red">{{ $k['v'] }}</td><td>{{ $k['g'] }}%</td><td>↓</td>
+                            @endforeach
+                            <td>93.7%</td><td class="pure-text-red">▼</td>
+                        </tr>
+                    </tfoot>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-            <div style="display: flex; gap: 16px;">
+    <!-- =========================================
+         MAIN DATA TABLE (Activation KPIs)
+         ========================================= -->
+    <div class="pure-table-wrapper" x-show="activeTab === 'activation'">
+        <div class="pure-table-scroll">
+            <table class="pure-table">
+                <thead>
+                    <tr>
+                        <th class="pure-th-main pure-sticky-col" style="width: 40px;">#</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 40px; width: 80px;">District</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 120px; width: 140px;">Banking Type</th>
+                        
+                        <th colspan="5" class="pure-th-main">ACCOUNT ACTIVATION</th>
+                        <th colspan="5" class="pure-th-main">CARD ACTIVATION</th>
+                        <th colspan="5" class="pure-th-main">SUPER APP ACTIVATION</th>
+                        <th colspan="2" class="pure-th-main">Overall</th>
+                    </tr>
+                    <tr>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 0; width: 40px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 40px; width: 80px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 120px; width: 140px;"></th>
+                        @for ($i = 0; $i < 3; $i++)
+                            <th class="pure-th-sub">Actual</th><th class="pure-th-sub">Target</th><th class="pure-th-sub">Variance</th><th class="pure-th-sub">Achievement</th><th class="pure-th-sub">Trend</th>
+                        @endfor
+                        <th class="pure-th-sub">Score</th>
+                        <th class="pure-th-sub">Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($data as $row)
+                        <tr class="{{ $row['is_district'] ? 'pure-row-district' : 'pure-row-branch' }}">
+                            <td class="pure-sticky-col" style="width: 40px;">
+                                @if($row['is_district'] && $row['id'] == '')
+                                    <x-heroicon-s-chevron-down style="width: 12px; height: 12px; color: #9ca3af;" />
+                                @else
+                                    {{ $row['id'] }}
+                                @endif
+                            </td>
+                            <td class="pure-sticky-col {{ $row['is_district'] ? 'pure-font-bold' : '' }}" style="left: 40px;">{{ $row['district'] }}</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">{{ $row['type'] }}</td>
 
-                <span style="color: #16a34a; display: flex; align-items: center; gap: 2px;">
-                    <x-heroicon-s-arrow-up />
-                    Improving
-                </span>
+                            <!-- Activation KPIs -->
+                            @foreach(['acc_act', 'card_act', 'super_act'] as $kpi)
+                                @php $k = $row['activation'][$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td>
+                                <td>{{ $k['t'] }}</td>
+                                <td class="{{ strpos((string)$k['v'], '-') !== false ? 'pure-text-red' : (strpos((string)$k['v'], '+') !== false ? 'pure-text-green' : '') }}">{{ $k['v'] }}</td>
+                                <td>{{ $k['g'] }}%</td>
+                                <td class="{{ $k['tr'] === '↓' ? 'pure-text-red' : ($k['tr'] === '↑' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $k['tr'] }}</td>
+                            @endforeach
 
-                <span style="color: #6b7280; display: flex; align-items: center; gap: 2px;">
-                    <x-heroicon-s-arrow-right />
-                    Stable
-                </span>
+                            <!-- Overall -->
+                            <td class="{{ $row['overall']['score'] < 90 ? 'pure-text-red' : ($row['overall']['score'] < 95 ? 'pure-text-amber' : 'pure-text-green') }}">{{ $row['overall']['score'] }}%</td>
+                            <td class="{{ $row['overall']['trend'] === 'down' ? 'pure-text-red' : ($row['overall']['trend'] === 'up' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $row['overall']['trend'] === 'up' ? '▲' : ($row['overall']['trend'] === 'down' ? '▼' : '→') }}</td>
+                        </tr>
+                    @endforeach
 
-                <span style="color: #dc2626; display: flex; align-items: center; gap: 2px;">
-                    <x-heroicon-s-arrow-down />
-                    Declining
-                </span>
+                    <!-- Grand Total -->
+                    <tfoot class="pure-row-grand-total">
+                        <tr>
+                            <td class="pure-sticky-col" style="width: 40px;"></td>
+                            <td class="pure-sticky-col" style="left: 40px;">GRAND TOTAL</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">-</td>
+                            @php $gt = $data[0]['activation']; @endphp
+                            @foreach(['acc_act', 'card_act', 'super_act'] as $kpi)
+                                @php $k = $gt[$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td><td>{{ $k['t'] }}</td><td class="pure-text-red">{{ $k['v'] }}</td><td>{{ $k['g'] }}%</td><td>↓</td>
+                            @endforeach
+                            <td>93.7%</td><td class="pure-text-red">▼</td>
+                        </tr>
+                    </tfoot>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-            </div>
+    <!-- =========================================
+         MAIN DATA TABLE (Other KPIs)
+         ========================================= -->
+    <div class="pure-table-wrapper" x-show="activeTab === 'other'">
+        <div class="pure-table-scroll">
+            <table class="pure-table">
+                <thead>
+                    <tr>
+                        <th class="pure-th-main pure-sticky-col" style="width: 40px;">#</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 40px; width: 80px;">District</th>
+                        <th class="pure-th-main pure-sticky-col" style="left: 120px; width: 140px;">Banking Type</th>
+                        
+                        <th colspan="5" class="pure-th-main">SERVICE QUALITY</th>
+                        <th colspan="5" class="pure-th-main">ATM TRANSACTION</th>
+                        <th colspan="5" class="pure-th-main">POS TRANSACTION</th>
+                        <th colspan="5" class="pure-th-main">NPS</th>
+                        <th colspan="2" class="pure-th-main">Overall</th>
+                    </tr>
+                    <tr>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 0; width: 40px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 40px; width: 80px;"></th>
+                        <th class="pure-th-sub pure-sticky-col" style="left: 120px; width: 140px;"></th>
+                        @for ($i = 0; $i < 4; $i++)
+                            <th class="pure-th-sub">Actual</th><th class="pure-th-sub">Target</th><th class="pure-th-sub">Variance</th><th class="pure-th-sub">Achievement</th><th class="pure-th-sub">Trend</th>
+                        @endfor
+                        <th class="pure-th-sub">Score</th>
+                        <th class="pure-th-sub">Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($data as $row)
+                        <tr class="{{ $row['is_district'] ? 'pure-row-district' : 'pure-row-branch' }}">
+                            <td class="pure-sticky-col" style="width: 40px;">
+                                @if($row['is_district'] && $row['id'] == '')
+                                    <x-heroicon-s-chevron-down style="width: 12px; height: 12px; color: #9ca3af;" />
+                                @else
+                                    {{ $row['id'] }}
+                                @endif
+                            </td>
+                            <td class="pure-sticky-col {{ $row['is_district'] ? 'pure-font-bold' : '' }}" style="left: 40px;">{{ $row['district'] }}</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">{{ $row['type'] }}</td>
 
-            <div style="display: flex; gap: 12px; font-family: monospace; font-size: 11px;">
-                <span>A = Actual</span>
-                <span>T = Target</span>
-                <span>V = Variance</span>
-                <span>G% = Achievement %</span>
-                <span>Tr = Previous Day %</span>
-                <span>St = Status</span>
-            </div>
+                            <!-- Other KPIs -->
+                            @foreach(['service_quality', 'atm_txn', 'pos_txn', 'nps'] as $kpi)
+                                @php $k = $row['other'][$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td>
+                                <td>{{ $k['t'] }}</td>
+                                <td class="{{ strpos((string)$k['v'], '-') !== false ? 'pure-text-red' : (strpos((string)$k['v'], '+') !== false ? 'pure-text-green' : '') }}">{{ $k['v'] }}</td>
+                                <td>{{ $k['g'] }}%</td>
+                                <td class="{{ $k['tr'] === '↓' ? 'pure-text-red' : ($k['tr'] === '↑' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $k['tr'] }}</td>
+                            @endforeach
 
+                            <!-- Overall -->
+                            <td class="{{ $row['overall']['score'] < 90 ? 'pure-text-red' : ($row['overall']['score'] < 95 ? 'pure-text-amber' : 'pure-text-green') }}">{{ $row['overall']['score'] }}%</td>
+                            <td class="{{ $row['overall']['trend'] === 'down' ? 'pure-text-red' : ($row['overall']['trend'] === 'up' ? 'pure-text-green' : 'pure-text-amber') }}">{{ $row['overall']['trend'] === 'up' ? '▲' : ($row['overall']['trend'] === 'down' ? '▼' : '→') }}</td>
+                        </tr>
+                    @endforeach
+
+                    <!-- Grand Total -->
+                    <tfoot class="pure-row-grand-total">
+                        <tr>
+                            <td class="pure-sticky-col" style="width: 40px;"></td>
+                            <td class="pure-sticky-col" style="left: 40px;">GRAND TOTAL</td>
+                            <td class="pure-sticky-col" style="left: 120px; text-align: left;">-</td>
+                            @php $gt = $data[0]['other']; @endphp
+                            @foreach(['service_quality', 'atm_txn', 'pos_txn', 'nps'] as $kpi)
+                                @php $k = $gt[$kpi]; @endphp
+                                <td>{{ $k['a'] }}</td><td>{{ $k['t'] }}</td><td class="pure-text-red">{{ $k['v'] }}</td><td>{{ $k['g'] }}%</td><td>↓</td>
+                            @endforeach
+                            <td>93.7%</td><td class="pure-text-red">▼</td>
+                        </tr>
+                    </tfoot>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Table Legend (Shared across all tabs) -->
+    <div class="pure-table-legend">
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <span style="display: flex; align-items: center;">
+                <span class="pure-legend-dot green"></span> On Target (≥ 100%)
+            </span>
+            <span style="display: flex; align-items: center;">
+                <span class="pure-legend-dot amber"></span> Near Target (90 to 99%)
+            </span>
+            <span style="display: flex; align-items: center;">
+                <span class="pure-legend-dot red"></span> Below Target (&lt; 90%)
+            </span>
         </div>
 
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <span style="color: #16a34a; display: flex; align-items: center; gap: 2px;">
+                <x-heroicon-s-arrow-up /> Improving
+            </span>
+            <span style="color: #6b7280; display: flex; align-items: center; gap: 2px;">
+                <x-heroicon-s-arrow-right /> Stable
+            </span>
+            <span style="color: #dc2626; display: flex; align-items: center; gap: 2px;">
+                <x-heroicon-s-arrow-down /> Declining
+            </span>
+        </div>
+
+        <div style="display: flex; gap: 12px; font-family: monospace; font-size: 11px; flex-wrap: wrap;">
+            <span>Trend = Previous Day %</span>
+            <span>St = Status</span>
+        </div>
     </div>
-</div>
+
+</div> <!-- End Alpine Data Scope -->
 
 
 </x-filament-panels::page>
