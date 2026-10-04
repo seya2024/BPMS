@@ -22,6 +22,13 @@ class KPI extends Model
    
     ];
 
+     protected $casts = [
+        'report_date' => 'date',
+        'deposit' => 'decimal:2',
+        'fcy' => 'decimal:2',
+        'service_quality' => 'decimal:2',
+    ];
+
   public function category()
     {
         return $this->belongsTo(KPICategory::class, 'category_id');

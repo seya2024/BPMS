@@ -6,50 +6,94 @@ use App\Services\ReportService;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Sheet;
 
 /**
- * Writes a report dataset to a single sheet.
+ * Multi-sheet export:
+ *   Sheet 1 → Conventional Branches
+ *   Sheet 2 → IFB Branches
  *
- * Built FromArray rather than FromQuery: the report service has already reduced
- * everything to one row per branch, so the row count is bounded by the branch
- * count and holding it in memory is safe. Aggregating inside the export would
- * instead stream millions of detail rows through Excel.
+ * The report service is queried once per sheet, filtered by bankingType_id,
+ * so each tab contains exactly the branches of that banking type.
  */
-class ReportExport implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
+class ReportExport implements WithMultipleSheets
 {
     public function __construct(
         protected string $report,
         protected string $from,
         protected string $to,
         protected ?int $districtId = null,
+        protected ?int $branchId = null,
+        protected ?int $bankingTypeId = null,
     ) {}
 
-    public function array(): array
+    /**
+     * @return array<int, ReportSheet>
+     */
+    public function sheets(): array
     {
-        return ReportService::run($this->report, $this->from, $this->to, $this->districtId);
+        return [
+            // Conventional Banking tab
+            new ReportSheet(
+                report: $this->report,
+                from: $this->from,
+                to: $this->to,
+                title: 'Conventional Branches',
+                districtId: $this->districtId,
+                branchId: $this->branchId,
+                bankingTypeId: $this->resolveBankingTypeId('conventional'),
+            ),
+
+            // IFB tab
+            new ReportSheet(
+                report: $this->report,
+                from: $this->from,
+                to: $this->to,
+                title: 'IFB Branches',
+                districtId: $this->districtId,
+                branchId: $this->branchId,
+                bankingTypeId: $this->resolveBankingTypeId('ifb'),
+            ),
+        ];
     }
 
     /**
-     * Headings come from the first row, so a new column in the service is picked
-     * up without a second edit here.
+     * Resolve the banking_types.id for a given type by matching
+     * the name pattern in the banking_types table.
+     *
+     * If the user already picked a specific bankingTypeId in the filter,
+     * only the matching sheet is filled; the other becomes empty.
      */
-    public function headings(): array
+    protected function resolveBankingTypeId(string $kind): ?int
     {
-        $first = $this->array()[0] ?? [];
+        // If a specific type was selected by the user, honour it
+        // (and let the other sheet come back empty).
+        if ($this->bankingTypeId) {
+            $selected = \App\Models\BankingType::find($this->bankingTypeId);
+            if (!$selected) return $this->bankingTypeId;
 
-        return array_keys($first);
-    }
+            $name = strtolower($selected->name);
+            $isIfb = str_contains($name, 'ifb') || str_contains($name, 'islamic');
 
-    public function title(): string
-    {
-        return ReportService::REPORTS[$this->report] ?? 'Report';
-    }
+            if ($kind === 'ifb' && $isIfb) return $this->bankingTypeId;
+            if ($kind === 'conventional' && !$isIfb) return $this->bankingTypeId;
 
-    public function sheet(Sheet $sheet): Sheet
-    {
-        return $sheet->freezePane(1, 1);
+            return -1; // force empty result on the wrong sheet
+        }
+
+        // Otherwise pick the first banking type that matches the pattern
+        $query = \App\Models\BankingType::query()->orderBy('id');
+
+        return $kind === 'ifb'
+            ? (int) $query->where(function ($q) {
+                $q->where('name', 'like', '%IFB%')
+                  ->orWhere('name', 'like', '%Islamic%');
+            })->value('id')
+            : (int) $query->where('name', 'not like', '%IFB%')
+                ->where('name', 'not like', '%Islamic%')
+                ->value('id');
     }
 
     public static function filename(string $report, string $from, string $to): string
@@ -58,5 +102,62 @@ class ReportExport implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
         $range = $from === $to ? $from : "{$from}_to_{$to}";
 
         return "{$label}_{$range}.xlsx";
+    }
+}
+
+/**
+ * One sheet inside the workbook.
+ */
+class ReportSheet implements FromArray, ShouldAutoSize, WithHeadings, WithTitle
+{
+    public function __construct(
+        protected string $report,
+        protected string $from,
+        protected string $to,
+        protected string $title,
+        protected ?int $districtId = null,
+        protected ?int $branchId = null,
+        protected ?int $bankingTypeId = null,
+    ) {}
+
+    public function array(): array
+    {
+        // bankingTypeId = -1 forces an empty result (used when the user
+        // filtered to a specific type that doesn't belong to this sheet).
+        if ($this->bankingTypeId === -1) {
+            return [];
+        }
+
+        return ReportService::run(
+            $this->report,
+            $this->from,
+            $this->to,
+            $this->districtId,
+            $this->branchId,
+            $this->bankingTypeId ?: null,
+        );
+    }
+
+    public function headings(): array
+    {
+        $first = $this->array()[0] ?? [];
+
+        // Fallback headings if the sheet is empty — matches the report columns
+        // so an empty tab still has a proper header row.
+        if (empty($first)) {
+            return ['District', 'Branch', 'Banking Type'];
+        }
+
+        return array_keys($first);
+    }
+
+    public function title(): string
+    {
+        return $this->title;
+    }
+
+    public function sheet(Sheet $sheet): Sheet
+    {
+        return $sheet->freezePane(1, 1);
     }
 }

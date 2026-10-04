@@ -52,7 +52,6 @@ class Branch extends Model
         return $this->belongsTo(BankingType::class, 'bankingType_id');
     }
 
-
     public function getFilamentName(): string
     {
         return "{$this->name}";

@@ -11,24 +11,9 @@ use Filament\Schemas\Components\Utilities\Set;
 use App\Models\Branch;
 use App\Models\District;
 
-/**
- * Filament v4 migration note
- * -------------------------
- * This page used the Filament v3 form API (HasForms + InteractsWithForms +
- * getForms() + makeForm(), and a later attempt as Form()). All of those were
- * removed in v4, so every request to this route failed with
- * "Method DailyBusinessPerformance::makeForm does not exist".
- *
- * The v4 equivalent is a form(Schema $schema): Schema method, with state filled
- * by assigning to $this->data instead of $this->form->fill().
- *
- * Property types must also match Filament\Pages\Page EXACTLY - see $view and
- * $navigationIcon. A mismatch is thrown as a fatal error at panel boot, so it
- * takes down every page including /admin/login, not just this one.
- */
 class DailyBusinessPerformance extends Page
 {
-
+   
     // Type must match Filament's Page exactly: the inherited property is
     // declared `string | BackedEnum | null`, and a narrower `?string` is a fatal
     // error that breaks every page in the panel, not just this one.
@@ -42,14 +27,8 @@ class DailyBusinessPerformance extends Page
     // included, not just this page.
     protected string $view = 'filament.pages.daily-business-performance';
 
-    /**
-     * Must be PUBLIC. Livewire's wire:model can only write to a public
-     * property, so a protected $data makes the console throw
-     * "property ['data.district'] does not exist on component" on every
-     * keystroke/selection, and the selects silently do nothing.
-     *
-     * @var array<string, mixed>
-     */
+
+
     public ?array $data = [];
 
     public function mount(): void
@@ -61,101 +40,264 @@ class DailyBusinessPerformance extends Page
         ];
     }
 
-public function form(Schema $schema): Schema
-{
-    return $schema
-        ->statePath('data')
-        ->columns([
-            'default' => 1,
-            'md' => 3,
-        ])
-        ->components([
-            BusinessDay::picker('businessDate', 'Business Date'),
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->statePath('data')
+            ->columns([
+                'default' => 1,
+                'md' => 3,
+            ])
+            ->components([
+                BusinessDay::picker('businessDate', 'Business Date'),
 
-            Select::make('district')
-                ->label('District')
-                ->options([
-                    'All Districts' => 'All Districts',
-                    'Jimma' => 'Jimma',
-                ])
-                ->default('All Districts')
-                ->live()
-                ->afterStateUpdated(
-                    fn (Set $set) => $set('branch', 'All Branches')
-                ),
+                Select::make('district')
+                    ->label('District')
+                    ->options(function (): array {
+                        $options = ['All Districts' => 'All Districts'];
+                        foreach (District::query()->orderBy('name')->pluck('name', 'name') as $name => $value) {
+                            $options[$value] = $value;
+                        }
+                        return $options;
+                    })
+                    ->default('All Districts')
+                    ->live()
+                    ->afterStateUpdated(
+                        fn (Set $set) => $set('branch', 'All Branches')
+                    ),
 
-            Select::make('branch')
-                ->label('Branch')
-                ->options(function (Get $get): array {
-                    $district = $get('district');
+                Select::make('branch')
+                    ->label('Branch')
+                    ->options(function (Get $get): array {
+                        $districtName = $get('district');
 
-                    if ($district === 'All Districts') {
-                        return [
-                            'All Branches' => 'All Branches',
-                        ];
-                    }
+                        if (!$districtName || $districtName === 'All Districts') {
+                            return ['All Branches' => 'All Branches'];
+                        }
 
-                    return District::query()
-                        ->where('name', $district)
-                        ->first()
-                        ?->branches()
-                        ->orderBy('name')
-                        ->pluck('name', 'id')
-                        ->prepend('All Branches', 'All Branches')
-                        ->all() ?? [
-                            'All Branches' => 'All Branches',
-                        ];
-                })
-                ->default('All Branches')
-                ->searchable()
-                ->live(),
-        ]);
-}
+                        return District::query()
+                            ->where('name', $districtName)
+                            ->first()
+                            ?->branches()
+                            ->orderBy('name')
+                            ->pluck('name', 'id')
+                            ->prepend('All Branches', 'All Branches')
+                            ->all() ?? ['All Branches' => 'All Branches'];
+                    })
+                    ->default('All Branches')
+                    ->searchable()
+                    ->live(),
+            ]);
+    }
 
+    /**
+     * Fetch and format all branch and district data from the database.
+     */
     public function getDashboardData(): array
     {
+        $reportDate = $this->data['businessDate'] ?? now()->subDay()->toDateString();
+        $selectedDistrict = $this->data['district'] ?? 'All Districts';
+        $selectedBranch = $this->data['branch'] ?? 'All Branches';
+
+        $tableData = [];
+
+        // Fetch Districts based on filter
+        $districtsQuery = District::query()->orderBy('name');
+        if ($selectedDistrict !== 'All Districts') {
+            $districtsQuery->where('name', $selectedDistrict);
+        }
+        $districts = $districtsQuery->get();
+
+        foreach ($districts as $district) {
+            // Fetch Branches for this District based on filter
+            $branchesQuery = $district->branches()->orderBy('name');
+            if ($selectedBranch !== 'All Branches') {
+                $branchesQuery->where('name', $selectedBranch);
+            }
+            $branches = $branchesQuery->get();
+
+            if ($branches->isEmpty()) {
+                continue;
+            }
+
+            $districtTotals = $this->initTotals();
+            $branchRows = [];
+
+            foreach ($branches as $index => $branch) {
+                // =========================================================
+                // KPI DATA FETCH
+                // =========================================================
+                // Replace this section with your actual KPI model query.
+                // Example: 
+                // $kpis = \App\Models\KpiPerformance::where('branch_id', $branch->id)
+                //     ->where('date', $reportDate)
+                //     ->first();
+                
+                $kpis = null; // -> Replace with query above
+
+                $rowData = $this->buildRowData($kpis);
+
+                // Determine Banking Type from branch name (IFB vs Conventional)
+                $type = stripos($branch->name, 'IFB') !== false ? 'IFB' : 'Conventional';
+                
+                $branchRows[] = [
+                    'name' => ($index + 1) . '. ' . $branch->name,
+                    'type' => $type,
+                    'data' => $rowData
+                ];
+
+                $this->addToTotals($districtTotals, $rowData);
+            }
+
+            $formattedDistrictData = $this->formatTotals($districtTotals);
+
+            // Determine district-level banking type
+            $types = collect($branchRows)->pluck('type')->unique();
+            $districtType = $types->count() === 1 ? $types->first() : 'Mixed';
+
+            $tableData[] = [
+                'district_name' => strtoupper($district->name) . ' DISTRICT',
+                'district_type' => $districtType,
+                'district_data' => $formattedDistrictData,
+                'branches' => $branchRows,
+            ];
+        }
+
+        return ['table_data' => $tableData];
+    }
+
+    private function initTotals(): array
+    {
         return [
-            'table_data' => [
-                [
-                    'district_name' => 'JIMMA DISTRICT',
-                    'district_data' => $this->getBranchData(299, 310, 96, 52, 52, 100, 39, 50, 78, 2900, 3100, 94, 180, 200, 90, 94.2, 'down'),
-                    'branches' => [
-                        ['name' => '1. Jimma Main', 'data' => $this->getBranchData(125, 120, 104, 24, 20, 120, 18, 25, 72, 1245, 1300, 96, 95, 100, 95, 97.8, 'up')],
-                        ['name' => '2. Agaro', 'data' => $this->getBranchData(98, 110, 89, 17, 20, 85, 12, 15, 80, 934, 1050, 89, 52, 60, 87, 87.2, 'down')],
-                        ['name' => '3. Bedele', 'data' => $this->getBranchData(76, 80, 95, 11, 12, 92, 9, 10, 90, 721, 750, 96, 33, 40, 83, 91.4, 'stable')],
-                    ]
-                ],
-                [
-                    'district_name' => 'BAHIR DAR DISTRICT',
-                    'district_data' => $this->getBranchData(410, 420, 98, 76, 80, 95, 62, 70, 89, 3800, 4000, 95, 250, 270, 93, 93.6, 'down'),
-                    'branches' => [
-                        ['name' => '5. Bahir Dar 1', 'data' => $this->getBranchData(160, 170, 94, 30, 34, 88, 25, 30, 83, 1450, 1600, 91, 100, 110, 91, 90.2, 'down')],
-                        ['name' => '6. Bahir Dar 2', 'data' => $this->getBranchData(140, 135, 104, 26, 28, 93, 22, 26, 85, 1250, 1300, 96, 90, 95, 95, 94.8, 'up')],
-                        ['name' => '7. Bahir Dar 3', 'data' => $this->getBranchData(110, 115, 96, 20, 18, 111, 15, 14, 107, 1100, 1100, 100, 60, 65, 92, 96.7, 'up')],
-                    ]
-                ],
-                [
-                    'district_name' => 'SNNP DISTRICT',
-                    'district_data' => $this->getBranchData(320, 340, 94, 58, 60, 97, 48, 55, 87, 2450, 2700, 91, 160, 180, 89, 91.8, 'down'),
-                    'branches' => [
-                        ['name' => '9. Hawassa', 'data' => $this->getBranchData(130, 140, 93, 24, 26, 92, 20, 25, 80, 1100, 1200, 92, 85, 95, 89, 89.5, 'down')],
-                        ['name' => '10. Wolayta Sodo', 'data' => $this->getBranchData(110, 120, 92, 18, 20, 90, 16, 20, 80, 950, 1100, 86, 50, 60, 83, 85.6, 'down')],
-                        ['name' => '11. Dilla', 'data' => $this->getBranchData(80, 80, 100, 16, 14, 114, 12, 10, 120, 400, 400, 100, 25, 25, 100, 98.4, 'up')],
-                    ]
-                ]
-            ]
+            'major' => [
+                'deposit' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'accounts' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'fcy' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'loans' => ['numeric_a' => 0, 'numeric_t' => 0],
+            ],
+            'digital' => [
+                'card_sub' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'pos_sub' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'super_sub' => ['numeric_a' => 0, 'numeric_t' => 0],
+            ],
+            'activation' => [
+                'acc_act' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'card_act' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'super_act' => ['numeric_a' => 0, 'numeric_t' => 0],
+            ],
+            'other' => [
+                'service_quality' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'atm_txn' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'pos_txn' => ['numeric_a' => 0, 'numeric_t' => 0],
+                'nps' => ['numeric_a' => 0, 'numeric_t' => 0],
+            ],
         ];
     }
 
-    private function getBranchData($depA, $depT, $depG, $accA, $accT, $accG, $mobA, $mobT, $mobG, $atmA, $atmT, $atmG, $loanA, $loanT, $loanG, $overall, $trend): array
+    private function buildRowData($kpis): array
     {
         return [
-            'deposit' => ['a' => $depA, 't' => $depT, 'v' => $depA - $depT, 'g' => $depG, 'trend' => $trend],
-            'accounts' => ['a' => $accA, 't' => $accT, 'v' => $accA - $accT, 'g' => $accG, 'trend' => $trend],
-            'mobile' => ['a' => $mobA, 't' => $mobT, 'v' => $mobA - $mobT, 'g' => $mobG, 'trend' => $trend],
-            'atm' => ['a' => $atmA, 't' => $atmT, 'v' => $atmA - $atmT, 'g' => $atmG, 'trend' => $trend === 'down' ? 'up' : 'down'],
-            'loans' => ['a' => $loanA, 't' => $loanT, 'v' => $loanA - $loanT, 'g' => $loanG, 'trend' => 'down'],
-            'overall' => ['score' => $overall, 'trend' => $trend],
+            'major' => [
+                'deposit' => $this->calc($kpis->deposit_actual ?? 0, $kpis->deposit_target ?? 0),
+                'accounts' => $this->calc($kpis->accounts_actual ?? 0, $kpis->accounts_target ?? 0),
+                'fcy' => $this->calc($kpis->fcy_actual ?? 0, $kpis->fcy_target ?? 0),
+                'loans' => $this->calc($kpis->loans_actual ?? 0, $kpis->loans_target ?? 0),
+            ],
+            'digital' => [
+                'card_sub' => $this->calc($kpis->card_sub_actual ?? 0, $kpis->card_sub_target ?? 0),
+                'pos_sub' => $this->calc($kpis->pos_sub_actual ?? 0, $kpis->pos_sub_target ?? 0),
+                'super_sub' => $this->calc($kpis->super_sub_actual ?? 0, $kpis->super_sub_target ?? 0),
+            ],
+            'activation' => [
+                'acc_act' => $this->calc($kpis->acc_act_actual ?? 0, $kpis->acc_act_target ?? 0),
+                'card_act' => $this->calc($kpis->card_act_actual ?? 0, $kpis->card_act_target ?? 0),
+                'super_act' => $this->calc($kpis->super_act_actual ?? 0, $kpis->super_act_target ?? 0),
+            ],
+            'other' => [
+                'service_quality' => $this->calc($kpis->service_quality_actual ?? 0, $kpis->service_quality_target ?? 0),
+                'atm_txn' => $this->calc($kpis->atm_txn_actual ?? 0, $kpis->atm_txn_target ?? 0),
+                'pos_txn' => $this->calc($kpis->pos_txn_actual ?? 0, $kpis->pos_txn_target ?? 0),
+                'nps' => $this->calc($kpis->nps_actual ?? 0, $kpis->nps_target ?? 0),
+            ],
+            'overall' => $this->calcOverall($kpis->overall_score ?? 0),
         ];
+    }
+
+    private function calc($actual, $target): array
+    {
+        $variance = $actual - $target;
+        $achievement = $target > 0 ? (int) round(($actual / $target) * 100) : 0;
+        $varianceStr = ($variance > 0 ? '+' : '') . $this->formatNumber($variance);
+
+        $trend = '→';
+        if ($achievement >= 100) {
+            $trend = '↑';
+        } elseif ($achievement < 90) {
+            $trend = '↓';
+        }
+
+        return [
+            'a' => $this->formatNumber($actual),
+            't' => $this->formatNumber($target),
+            'v' => $varianceStr,
+            'g' => $achievement,
+            'tr' => $trend,
+            'numeric_a' => $actual,
+            'numeric_t' => $target,
+        ];
+    }
+
+    private function calcOverall($score): array
+    {
+        $trend = 'stable';
+        if ($score >= 95) {
+            $trend = 'up';
+        } elseif ($score < 90) {
+            $trend = 'down';
+        }
+
+        return [
+            'score' => $score,
+            'trend' => $trend,
+        ];
+    }
+
+    private function formatNumber($number): string
+    {
+        $number = (float) $number;
+        if (abs($number) >= 1000000) {
+            return round($number / 1000000, 1) . 'M';
+        } elseif (abs($number) >= 1000) {
+            return round($number / 1000, 0) . 'K';
+        }
+        return (string) round($number);
+    }
+
+    private function addToTotals(array &$totals, array $rowData): void
+    {
+        foreach (['major', 'digital', 'activation', 'other'] as $category) {
+            foreach ($rowData[$category] as $key => $values) {
+                $totals[$category][$key]['numeric_a'] += $values['numeric_a'];
+                $totals[$category][$key]['numeric_t'] += $values['numeric_t'];
+            }
+        }
+    }
+
+    private function formatTotals(array $totals): array
+    {
+        $formatted = [];
+        
+        foreach (['major', 'digital', 'activation', 'other'] as $category) {
+            foreach ($totals[$category] as $key => $values) {
+                $formatted[$category][$key] = $this->calc(
+                    $values['numeric_a'], 
+                    $values['numeric_t']
+                );
+            }
+        }
+
+        $formatted['overall'] = $this->calcOverall(0); 
+
+        return $formatted;
     }
 }

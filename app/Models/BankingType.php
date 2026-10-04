@@ -40,15 +40,16 @@ class BankingType extends Model
         'created_at',
         'updated_at',
     ];
+    
+
+    public function branches()
+{
+    return $this->hasMany(Branch::class, 'bankingType_id');
+}
 
 public function ifbBranches()
 {
-    return $this->hasMany(Branch::class)
-        ->where('banking_type_id', $this->id);
+    return $this->hasMany(Branch::class, 'bankingType_id')
+        ->where('name', 'like', '%IFB%');
 }
-
-       public function branches()
-    {
-        return $this->hasMany(Branch::class);
-    }
 }

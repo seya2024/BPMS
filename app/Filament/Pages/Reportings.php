@@ -4,30 +4,26 @@ namespace App\Filament\Pages;
 
 use App\Exports\ReportExport;
 use App\Filament\Support\BusinessDay;
+use App\Models\BankingType;
+use App\Models\Branch;
 use App\Models\District;
 use App\Services\ReportService;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
-use Maatwebsite\Excel\Facades\Excel;
+use Filament\Forms\Components\Toggle;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Carbon;
-use Filament\Forms\Components\Toggle;
+use Maatwebsite\Excel\Facades\Excel;
 
-/**
- * Reportings: the five daily/period reports, exportable to Excel.
- *
- * Defaults to a single business day of yesterday. A date range is optional and its
- * upper bound is clamped to yesterday, so no report can be pulled for a day that
- * has not finished reporting.
- */
 class Reportings extends Page
 {
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-chart-bar';
 
-    // Types must match Filament's Page exactly: an inherited property's type
-    // cannot be widened or removed.
     protected static string | \UnitEnum | null $navigationGroup = 'Reportings';
 
     protected static ?string $navigationLabel = 'Report';
@@ -36,13 +32,7 @@ class Reportings extends Page
 
     protected static ?int $navigationSort = 1;
 
-    /**
-     * Must be PUBLIC: Livewire only syncs public properties, so a protected
-     * $data is omitted from the snapshot and every field raises
-     * "property ['data.x'] cannot be found on component".
-     *
-     * @var array<string, mixed>
-     */
+    /** @var array<string, mixed> */
     public ?array $data = [];
 
     public function getView(): string
@@ -52,66 +42,129 @@ class Reportings extends Page
 
     public function mount(): void
     {
+        $reports = ReportService::reports();
+        $defaultReport = array_key_exists('all_kpi', $reports)
+            ? 'all_kpi'
+            : (array_key_first($reports) ?? 'all_kpi');
+
         $this->data = [
-            'report' => array_key_first(ReportService::REPORTS),
+            'report' => $defaultReport,
             'from' => Carbon::yesterday()->toDateString(),
             'to' => Carbon::yesterday()->toDateString(),
             'district_id' => null,
+            'branch_id' => null,
+            'banking_type_id' => null,
             'use_range' => false,
         ];
     }
-public function form(Schema $schema): Schema
-{
-    return $schema
-        ->statePath('data')
-        ->components([
-            Section::make('Report options')
-                ->description(
-                    'Reports cover yesterday by default. Tick "Use a date range" to report over a custom period; the end date cannot be today or later.'
-                )
-                ->columnSpanFull()
-                ->compact()
-                ->columns(4)
-                ->schema([
-                    Select::make('report')
-                        ->label('Report')
-                        ->options(ReportService::REPORTS)
-                        ->live()
-                        ->required()
-                        ->columnSpan(1),
 
-                    Select::make('district_id')
-                        ->label('District Office')
-                        ->options(fn (): array => District::query()
-                            ->whereHas('branches')
-                            ->orderBy('name')
-                            ->pluck('name', 'id')
-                            ->all())
-                        ->searchable()
-                        ->placeholder('All districts')
-                        ->columnSpan(1),
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->statePath('data')
+            ->components([
+                Section::make('Report options')
+                    ->description('Reports cover yesterday by default. Filters cascade District → Branch → Banking Type.')
+                    ->columnSpanFull()
+                    ->compact()
+                    ->columns(5)
+                    ->schema([
 
-                    Toggle::make('use_range')
-                        ->label('Use a date range')
-                        ->helperText('Off = a single day')
-                        ->live()
-                        ->default(false)
-                        ->columnSpan(2),
+                        Select::make('district_id')
+                            ->label('District Office')
+                            ->options(fn (): array => District::query()
+                                ->whereHas('branches')
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
+                            ->searchable()
+                            ->placeholder('All districts')
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('branch_id', null);
+                                $set('banking_type_id', null);
+                            })
+                            ->columnSpan(1),
 
-                    BusinessDay::picker('from', 'From')
-                        ->columnSpan(1),
+                        Select::make('banking_type_id')
+                            ->label('Banking Type')
+                            ->options(function (Get $get): array {
+                                $districtId = $get('district_id');
+                                $branchId   = $get('branch_id');
 
-                    BusinessDay::picker('to', 'To')
-                        ->columnSpan(1),
-                ]),
-        ]);
-}
+                                $usedTypeIds = \Illuminate\Support\Facades\DB::table('branches')
+                                    ->when($branchId, fn ($q) => $q->where('id', $branchId))
+                                    ->when(!$branchId && $districtId, fn ($q) => $q->where('district_id', $districtId))
+                                    ->whereNotNull('bankingType_id')
+                                    ->distinct()
+                                    ->pluck('bankingType_id')
+                                    ->all();
+
+                                if (empty($usedTypeIds) && !$districtId && !$branchId) {
+                                    return BankingType::query()->orderBy('name')->pluck('name', 'id')->all();
+                                }
+                                if (empty($usedTypeIds)) {
+                                    return [];
+                                }
+
+                                return BankingType::query()
+                                    ->whereIn('id', $usedTypeIds)
+                                    ->orderBy('name')
+                                    ->pluck('name', 'id')
+                                    ->all();
+                            })
+                            ->searchable()
+                            ->placeholder('All banking types')
+                            ->live()
+                            ->columnSpan(1),
+
+                        Select::make('report')
+                            ->label('Select KPI')
+                            ->options(fn (): array => ReportService::reports())
+                            ->searchable()
+                            ->live()
+                            ->required()
+                            ->columnSpan(1),
+
+                        Toggle::make('use_range')
+                            ->label('Use a date range')
+                            ->helperText('Off = a single day')
+                            ->live()
+                            ->default(false)
+                            ->columnSpan(1),
+
+                        // Business Day (read-only) — shown when range is OFF
+                        Placeholder::make('business_day_display')
+                            ->label('Business Day')
+                            ->content(fn () => Carbon::yesterday()->format('j M Y'))
+                            ->visible(fn (Get $get) => ! $get('use_range'))
+                            ->columnSpan(1),
+
+                        // From — shown only when range is ON
+                        BusinessDay::picker('from', 'From')
+                            ->visible(fn (Get $get) => (bool) $get('use_range'))
+                            ->columnSpan(1),
+
+                        // To — shown only when range is ON
+                        BusinessDay::picker('to', 'To')
+                            ->visible(fn (Get $get) => (bool) $get('use_range'))
+                            ->columnSpan(1),
+                    ]),
+            ]);
+    }
 
     public function getReportRows(): array
     {
-        [$report, $from, $to, $districtId] = $this->exportContext();
+        [$report, $from, $to, $districtId, $branchId, $bankingTypeId] = $this->exportContext();
 
-        return ReportService::run($report, $from, $to, $districtId);
+        return ReportService::run(
+            $report,
+            $from,
+            $to,
+            $districtId,
+            $branchId,
+            $bankingTypeId,
+        );
     }
 
     public function getWindowLabel(): string
@@ -123,15 +176,20 @@ public function form(Schema $schema): Schema
             : Carbon::parse($window['from'])->format('j M Y') . ' to ' . Carbon::parse($window['to'])->format('j M Y');
     }
 
+    public function getReportName(): string
+    {
+        $key = (string) ($this->data['report'] ?? 'all_kpi');
+        $reports = ReportService::reports();
+
+        return $reports[$key] ?? 'Report';
+    }
+
     /**
      * @return array<string, array<int, mixed>>
      */
     protected function getHeaderActions(): array
     {
         return [
-            // A plain Action rather than Filament's ExportAction: that one is bound
-            // to a table (it needs visible table columns and a query), and these
-            // reports are built by the service, not by a table query.
             Action::make('exportExcel')
                 ->label('Export to Excel')
                 ->icon('heroicon-o-arrow-down-tray')
@@ -142,10 +200,10 @@ public function form(Schema $schema): Schema
                 ->modalDescription('The file contains one row per branch for the selected report and period.')
                 ->modalSubmitActionLabel('Download')
                 ->action(function (): mixed {
-                    [$report, $from, $to, $districtId] = $this->exportContext();
+                    [$report, $from, $to, $districtId, $branchId, $bankingTypeId] = $this->exportContext();
 
                     return Excel::download(
-                        new ReportExport($report, $from, $to, $districtId),
+                        new ReportExport($report, $from, $to, $districtId, $branchId, $bankingTypeId),
                         ReportExport::filename($report, $from, $to),
                     );
                 }),
@@ -153,9 +211,7 @@ public function form(Schema $schema): Schema
     }
 
     /**
-     * The report, window and district the export should use.
-     *
-     * @return array{0: string, 1: string, 2: string, 3: int|null}
+     * @return array{0: string, 1: string, 2: string, 3: int|null, 4: int|null, 5: int|null}
      */
     public function exportContext(): array
     {
@@ -165,9 +221,9 @@ public function form(Schema $schema): Schema
             (string) ($this->data['report'] ?? 'all_kpi'),
             $window['from'],
             $window['to'],
-            $this->data['district_id'] !== null && $this->data['district_id'] !== ''
-                ? (int) $this->data['district_id']
-                : null,
+            !empty($this->data['district_id'])     ? (int) $this->data['district_id']     : null,
+            !empty($this->data['branch_id'])       ? (int) $this->data['branch_id']       : null,
+            !empty($this->data['banking_type_id']) ? (int) $this->data['banking_type_id'] : null,
         ];
     }
 
